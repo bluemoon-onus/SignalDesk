@@ -5,9 +5,8 @@ import { usePathname } from "next/navigation";
 import { BarChart3, BriefcaseBusiness, Compass, Target } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
+import { aiDealArchitectMockData } from "@/data";
 import { cn } from "@/lib/utils";
-
-const companyName = "Helix Semiconductor";
 
 const navigationItems = [
   {
@@ -42,6 +41,9 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const {
+    account: { company, industry }
+  } = aiDealArchitectMockData;
 
   return (
     <div className="min-h-screen bg-background bg-mesh-grid bg-mesh-grid text-foreground">
@@ -119,7 +121,12 @@ export function AppShell({ children }: AppShellProps) {
                 <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
                   Account focus
                 </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">{companyName}</h2>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">{company}</h2>
+                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                    {industry}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />

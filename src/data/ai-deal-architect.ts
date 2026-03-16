@@ -7,54 +7,134 @@ export const aiDealArchitectMockData: AIDealArchitectBrief = {
     situation:
       "SK Hynix is modernizing fab operations with AI-driven yield optimization and defect detection, and is evaluating intelligent process control and predictive maintenance across HBM4 production lines to protect ramp schedules, reduce excursion risk, and improve output quality at the point where every incremental yield gain has outsized revenue impact.",
     painPoints: [
-      "Yield loss analysis still requires engineers to reconcile inspection, metrology, equipment, and process data across separate systems, which slows root-cause identification when line conditions begin to drift.",
-      "HBM4 ramp pressure is increasing the cost of missed defects, unplanned tool downtime, and process excursions because the downstream impact compounds across tightly coupled production steps.",
-      "Process control decisions are supported by strong engineering expertise, but many intervention points remain reactive, creating variability in how quickly the line responds to early defect signatures.",
-      "Maintenance teams have historical equipment data, yet planning is still too dependent on threshold-based alerts and manual judgment to consistently prevent failures on critical tools."
+      {
+        title: "Fragmented yield diagnosis slows intervention",
+        detail:
+          "Yield engineers still have to reconcile inspection, metrology, tool, and process data across separate systems before they can isolate the most likely source of drift. That delay turns early warning signals into downstream yield loss.",
+        severity: "High"
+      },
+      {
+        title: "HBM4 ramp economics magnify each missed defect",
+        detail:
+          "As HBM4 volumes scale, the cost of excursions, scrap, and shipment risk compounds quickly. Small defects that would once have been tolerated now have disproportionate financial and customer impact.",
+        severity: "High"
+      },
+      {
+        title: "Process control remains too reactive at critical steps",
+        detail:
+          "Engineering teams know where variability shows up, but intervention often happens after conditions have already moved outside the optimal operating window. The line needs earlier, more confident recommendations.",
+        severity: "Med"
+      },
+      {
+        title: "Maintenance planning is data-rich but not predictive enough",
+        detail:
+          "Historical tool data exists, yet maintenance decisions still lean on threshold alerts and manual judgment. That leaves constrained assets exposed to avoidable downtime during a high-stakes production ramp.",
+        severity: "Low"
+      }
     ],
     whyNow: [
-      "HBM4 capacity expansion raises the business value of even small improvements in line stability, cycle time, and defect containment, which makes operational AI a board-level leverage point rather than a narrow factory experiment.",
-      "The data foundation for a pilot already exists across MES, APC, inspection, and equipment telemetry, which lowers the barrier to proving value within one line segment instead of waiting for a full smart-factory transformation.",
-      "Executive leadership needs a practical path to scale AI in the fab with measurable operational benefit, especially in areas where faster intervention can directly protect yield and shipment commitments."
+      {
+        title: "HBM4 economics make incremental yield gains board-relevant",
+        detail:
+          "SK Hynix does not need a moonshot improvement to justify engagement. Even modest gains in yield stability, excursion response, and uptime create meaningful upside on HBM4 lines."
+      },
+      {
+        title: "The data foundation is ready enough to prove value now",
+        detail:
+          "MES, APC, inspection, metrology, and equipment telemetry already provide enough signal to run a focused pilot without waiting for another multi-year data platform program."
+      },
+      {
+        title: "Leadership wants one pilot that scales beyond a single module",
+        detail:
+          "The current mandate is not to fund isolated analytics experiments. It is to prove an operational AI layer that can become a reusable pattern across high-value fab workflows."
+      }
     ],
     triggers: [
-      "HBM4 line performance has become strategically visible because production readiness, yield learning, and customer delivery confidence are now linked more tightly than in prior memory ramps.",
-      "Fab and digital manufacturing leaders are aligned on the need for an AI operating layer that can sit above current systems rather than forcing another multi-year platform replacement program.",
-      "Recent internal reviews have elevated defect escape risk, tool interruption exposure, and excursion response time as issues that deserve targeted investment before scale-up."
+      {
+        dateLabel: "January 2026",
+        title: "HBM4 ramp review elevated yield stability to an executive KPI",
+        detail:
+          "Production leadership linked yield learning speed, customer delivery confidence, and ramp economics more tightly than in prior memory introductions.",
+        impact: "Creates budget air cover for a pilot that can show measurable line-level benefit within the current ramp."
+      },
+      {
+        dateLabel: "February 2026",
+        title: "Operations review flagged tool interruption exposure on constrained assets",
+        detail:
+          "Recent downtime analysis highlighted recurring interruption patterns on high-value tools where failure timing directly affects throughput and recovery effort.",
+        impact: "Opens the door for predictive maintenance discussions tied to avoided downtime rather than generic AI modernization."
+      },
+      {
+        dateLabel: "March 2026",
+        title: "Digital manufacturing team was asked to define a reusable AI operating layer",
+        detail:
+          "Leadership wants AI to sit on top of current fab systems and operating reviews, not trigger another platform replacement effort.",
+        impact: "Favors vendors who can show a fast pilot path and a credible scale model at the same time."
+      }
+    ],
+    businessObjectives: [
+      {
+        title: "Protect the HBM4 yield ramp during scale-up",
+        targetKpi: "+0.8 to 1.2 yield points on the pilot segment",
+        rationale:
+          "The first objective is not abstract transformation. It is measurable yield protection on the line segment where incremental gains matter most."
+      },
+      {
+        title: "Shorten defect excursion response time",
+        targetKpi: "35% faster root-cause isolation",
+        rationale:
+          "Leadership wants engineering teams acting on earlier signals so losses are contained before they spread across downstream process steps."
+      },
+      {
+        title: "Reduce downtime on constrained production assets",
+        targetKpi: "15% fewer unplanned downtime hours on pilot tools",
+        rationale:
+          "Predictive maintenance only matters if it keeps high-value tools available during ramp periods when recovery time is expensive."
+      },
+      {
+        title: "Leave with a scale-ready fab AI model",
+        targetKpi: "2 next-line rollout candidates approved by pilot close",
+        rationale:
+          "A successful conversation must end with a repeatable operating pattern, not a one-off analytics win."
+      }
     ]
   },
   opportunities: [
     {
-      useCase:
-        "AI-driven yield excursion detection that correlates inspection results, metrology drift, and tool behavior to flag wafer lots at elevated risk before losses propagate downstream.",
+      useCase: "Yield Excursion Detection",
+      description:
+        "Flags at-risk wafer lots by correlating inspection, metrology, and tool drift before losses propagate downstream.",
       impactScore: 10,
-      difficulty: 7,
-      timeToValue: "5-7 weeks",
-      priority: "P1"
-    },
-    {
-      useCase:
-        "Intelligent process control recommendations that surface parameter adjustments and operating windows for critical HBM4 steps when the line begins to move outside optimal yield conditions.",
-      impactScore: 9,
-      difficulty: 8,
-      timeToValue: "6-8 weeks",
-      priority: "P1"
-    },
-    {
-      useCase:
-        "Predictive maintenance models for high-value tools that combine equipment telemetry, historical failure patterns, and production context to prevent avoidable downtime on constrained assets.",
-      impactScore: 9,
       difficulty: 6,
       timeToValue: "4-6 weeks",
+      priority: "P1"
+    },
+    {
+      useCase: "Predictive Maintenance Prioritization",
+      description:
+        "Ranks high-value tools by failure risk and production impact so maintenance teams intervene before constrained assets go down.",
+      impactScore: 9,
+      difficulty: 6,
+      timeToValue: "5-7 weeks",
       priority: "P2"
     },
     {
-      useCase:
-        "AI-assisted defect classification and engineering workbench workflows that prioritize the most commercially relevant defect signatures and shorten escalation time between yield, process, and equipment teams.",
+      useCase: "Defect Classification Copilot",
+      description:
+        "Prioritizes the most commercially relevant defect signatures and shortens handoff time between yield, process, and equipment teams.",
       impactScore: 8,
-      difficulty: 5,
-      timeToValue: "4-5 weeks",
+      difficulty: 4,
+      timeToValue: "3-5 weeks",
       priority: "P3"
+    },
+    {
+      useCase: "Intelligent Process Control",
+      description:
+        "Recommends parameter adjustments and operating windows for critical HBM4 steps when the line begins to move outside optimal yield conditions.",
+      impactScore: 10,
+      difficulty: 9,
+      timeToValue: "10-12 weeks",
+      priority: "P4"
     }
   ],
   stakeholders: [
