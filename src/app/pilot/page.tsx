@@ -1,11 +1,6 @@
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { PilotBrief } from "@/components/pilot-brief";
+import { aiDealArchitectMockData } from "@/data";
 
 export default function PilotPage() {
-  return (
-    <PagePlaceholder
-      eyebrow="Pilot plan"
-      title="Pilot"
-      description="Placeholder heading for pilot scope, ownership, timeline, ROI framing, and measurable outcomes."
-    />
-  );
+  return <PilotBrief brief={aiDealArchitectMockData} />;
 }

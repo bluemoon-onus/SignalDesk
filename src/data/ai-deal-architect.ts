@@ -139,51 +139,141 @@ export const aiDealArchitectMockData: AIDealArchitectBrief = {
   ],
   stakeholders: [
     {
-      role: "EVP, Manufacturing Operations",
-      stance: "Champion",
-      influence: "High",
-      objections: [
-        "Will sponsor the pilot only if it is scoped to deliver operational value within the current HBM4 ramp window rather than becoming a long-horizon innovation program.",
-        "Needs confidence that recommendations are interpretable enough for fab leadership to trust them in yield and uptime reviews."
-      ]
-    },
-    {
-      role: "VP, Yield Engineering",
+      name: "Min-jae Kim",
+      role: "Economic Buyer",
+      title: "EVP, Manufacturing Operations",
       stance: "Supportive",
       influence: "High",
+      keyConcern:
+        "Needs a pilot that protects HBM4 yield and uptime within the current operating cadence, not a transformation program that drifts into next year.",
+      recommendedApproach:
+        "Lead with economic impact, contain scope to one production segment, and show how the pilot produces executive-ready operating reviews in six weeks.",
       objections: [
-        "Will want proof that the models improve engineering signal quality instead of creating another dashboard layer with too many false positives.",
-        "Needs a defensible method for connecting model output to actual wafer-level yield actions and measurable defect reduction."
+        "We cannot fund another AI initiative unless it creates measurable line-level value inside the HBM4 ramp.",
+        "Any recommendation engine has to be explainable enough for fab leadership to trust in a weekly operating review."
       ]
     },
     {
-      role: "SVP, Digital Manufacturing and Smart Factory",
+      name: "Soo-jin Lee",
+      role: "Champion",
+      title: "VP, Yield Engineering",
       stance: "Supportive",
       influence: "High",
+      keyConcern:
+        "Wants earlier excursion visibility without adding another noisy analytics surface that engineers ignore after the first month.",
+      recommendedApproach:
+        "Show how alert precision, explainability, and engineer workflow fit improve signal quality instead of creating another dashboard burden.",
       objections: [
-        "Needs the pilot positioned as a reusable factory intelligence layer that can extend beyond one HBM4 module if value is proven.",
-        "Will expect clean integration boundaries with existing MES, APC, and data engineering environments."
+        "The models have to improve engineering signal quality, not just surface more alerts.",
+        "We need a defensible way to connect model output to real yield actions and measurable defect reduction."
       ]
     },
     {
-      role: "Director, Equipment Engineering and Maintenance",
-      stance: "Cautious",
+      name: "Jae-ho Park",
+      role: "Technical Evaluator",
+      title: "SVP, Digital Manufacturing and Smart Factory",
+      stance: "Neutral",
+      influence: "High",
+      keyConcern:
+        "Will evaluate whether the solution can sit cleanly on top of MES, APC, inspection, and equipment data without forcing a rip-and-replace architecture decision.",
+      recommendedApproach:
+        "Position the solution as a thin operational intelligence layer with clear integration boundaries, fast deployment, and no dependency on a new platform rollout.",
+      objections: [
+        "We do not want another pilot that only works because it bypasses existing MES and APC environments.",
+        "If this becomes a hidden platform replacement project, it will lose sponsorship quickly."
+      ]
+    },
+    {
+      name: "Dong-wook Choi",
+      role: "Blocker",
+      title: "Director, Equipment Engineering and Maintenance",
+      stance: "Resistant",
       influence: "Medium",
+      keyConcern:
+        "Pushes back on predictive maintenance claims that create extra planned downtime or override hard-earned tool-level engineering judgment.",
+      recommendedApproach:
+        "Frame predictive maintenance as a ranking and decision-support workflow with human approval, not an automated trigger that takes tools offline.",
       objections: [
-        "Will push back if predictive maintenance recommendations create additional planned downtime without a credible case that failure risk is materially reduced.",
-        "Needs the pilot to respect tool-specific operating realities instead of assuming generic maintenance logic can be applied across assets."
+        "We cannot accept recommendations that create more scheduled downtime than the failures they are supposed to prevent.",
+        "Tool behavior is highly specific; a generic maintenance model will not survive first contact with the line."
       ]
     },
     {
-      role: "General Manager, HBM4 Business Unit",
-      stance: "Skeptical",
+      name: "Hye-jin Han",
+      role: "Operational Influencer",
+      title: "General Manager, HBM4 Business Unit",
+      stance: "Neutral",
       influence: "High",
+      keyConcern:
+        "Needs proof that the pilot improves shipment confidence and gross margin protection, not just internal process metrics.",
+      recommendedApproach:
+        "Connect every pilot success metric to delivery confidence, customer commitments, and the economics of HBM4 line performance.",
       objections: [
-        "Will judge the initiative on whether it protects shipment confidence and margin, not on model sophistication or technical novelty.",
-        "Needs a concise business case showing how yield uplift, reduced scrap, and lower downtime translate into revenue and customer delivery benefits."
+        "The business case has to translate yield uplift, scrap reduction, and lower downtime into shipment confidence and margin.",
+        "Technical novelty is not enough if the pilot cannot show how it protects the HBM4 business."
       ]
     }
   ],
+  dealStrategy: {
+    likelyObjections: [
+      {
+        objection:
+          "We already have analytics and dashboards across the fab. Why do we need another AI layer now?",
+        response:
+          "This proposal is not another reporting layer. It is an operating layer that helps yield, equipment, and manufacturing teams intervene sooner by turning existing fab data into ranked actions inside the current HBM4 ramp."
+      },
+      {
+        objection:
+          "If engineers do not trust the recommendations, the pilot will create noise instead of value.",
+        response:
+          "The pilot is explicitly designed around transparent, human-in-the-loop workflows. Every recommendation is tied to explainable signals, reviewed in existing operating forums, and measured against action quality rather than model novelty."
+      },
+      {
+        objection:
+          "We cannot let a pilot disrupt the HBM4 production schedule or create hidden integration work.",
+        response:
+          "The six-week scope stays inside one production segment, uses current MES/APC/inspection/equipment feeds, and runs as a contained decision-support layer so the line can measure value without operational disruption."
+      },
+      {
+        objection:
+          "ROI needs to be hard-dollar and operational, not a generic innovation story.",
+        response:
+          "The business case is anchored to concrete line economics: incremental yield protection, avoided scrap, downtime reduction on constrained assets, and a time-bounded path to scale if the first pilot proves out."
+      }
+    ],
+    firstMeetingAgenda: [
+      {
+        time: "0-5 min",
+        topic: "HBM4 business context and why now",
+        outcome: "Align on the operational stakes behind yield, uptime, and shipment confidence."
+      },
+      {
+        time: "5-15 min",
+        topic: "Current excursion and downtime pain points",
+        outcome: "Confirm where the current workflow loses time, confidence, or economic value."
+      },
+      {
+        time: "15-25 min",
+        topic: "Pilot line segment and data readiness",
+        outcome: "Agree on the one production segment, tool set, and data sources that make the best pilot scope."
+      },
+      {
+        time: "25-35 min",
+        topic: "Success metrics, ROI guardrails, and executive reporting",
+        outcome: "Define what the customer would need to see in six weeks to justify internal sponsorship."
+      },
+      {
+        time: "35-45 min",
+        topic: "Next steps and technical workshop owners",
+        outcome: "Leave the meeting with named owners, data requests, and a calendar path to pilot kickoff."
+      }
+    ],
+    messagePositioning: [
+      "This is not another fab analytics experiment; it is a line-level operating layer that helps SK Hynix intervene earlier on yield excursions and constrained-tool risk during the HBM4 ramp.",
+      "The proposed six-week pilot works on top of current MES, APC, inspection, metrology, and equipment data so leadership can measure real line impact without waiting for a broader platform program.",
+      "If the pilot proves faster excursion response, lower downtime, and defensible economic value, SK Hynix leaves with a scale-ready model for expanding AI operations across additional high-value production flows."
+    ]
+  },
   pilotPlan: {
     scope: [
       "Focus the pilot on one HBM4 production segment with a defined set of critical tools, process steps, and inspection checkpoints.",
@@ -192,16 +282,102 @@ export const aiDealArchitectMockData: AIDealArchitectBrief = {
       "Deliver weekly operating reviews that quantify model signal quality, intervention value, downtime avoidance, and scale-up readiness."
     ],
     weeks: 6,
+    phases: [
+      {
+        name: "Setup",
+        weeks: "Week 1-2",
+        startWeek: 1,
+        endWeek: 2,
+        objective:
+          "Confirm scope, connect the minimum viable data streams, and agree on how pilot recommendations will be reviewed by fab teams.",
+        deliverables: [
+          "Pilot line segment, tool set, and owner alignment",
+          "Data access for MES, APC, inspection, metrology, and equipment telemetry",
+          "Alert thresholds, governance rules, and weekly review cadence"
+        ]
+      },
+      {
+        name: "Pilot Run",
+        weeks: "Week 3-4",
+        startWeek: 3,
+        endWeek: 4,
+        objective:
+          "Run yield excursion detection and predictive maintenance prioritization in supervised mode and measure signal quality inside live operating reviews.",
+        deliverables: [
+          "Ranked excursion alerts and recommended interventions",
+          "Tool-risk scoring for constrained assets",
+          "Weekly readouts on response time, action quality, and intervention outcomes"
+        ]
+      },
+      {
+        name: "Evaluation",
+        weeks: "Week 5-6",
+        startWeek: 5,
+        endWeek: 6,
+        objective:
+          "Quantify operational impact, validate the economic case, and decide whether the line is ready for scale-up.",
+        deliverables: [
+          "Pilot outcome review with fab leadership",
+          "ROI case with scale-up assumptions and next-line candidates",
+          "Recommendation on rollout, defer, or redesign"
+        ]
+      }
+    ],
+    requiredResources: [
+      {
+        item: "MES and APC history for the pilot segment",
+        detail: "Recent process context and control data across the selected HBM4 flow.",
+        owner: "Smart Factory Platform Team"
+      },
+      {
+        item: "Inspection and metrology data",
+        detail: "Historical defect signatures and current-state line quality signals for pilot lots.",
+        owner: "Yield Engineering"
+      },
+      {
+        item: "Equipment telemetry and maintenance logs",
+        detail: "Tool events, alarms, and service history for constrained assets in scope.",
+        owner: "Equipment Engineering"
+      },
+      {
+        item: "Dedicated fab SMEs for weekly review",
+        detail: "One yield lead, one maintenance lead, and one operations owner to evaluate recommendations.",
+        owner: "Manufacturing Operations"
+      },
+      {
+        item: "Executive sponsor for pilot governance",
+        detail: "A leadership owner who can align success criteria and unblock scale decisions quickly.",
+        owner: "EVP Manufacturing Operations"
+      }
+    ],
     successMetrics: [
-      "Reduce time to identify likely root cause for priority defect excursions by at least 35 percent during the pilot window.",
-      "Demonstrate measurable improvement in early defect detection precision on the selected HBM4 process segment.",
-      "Prevent or mitigate at least one meaningful unplanned downtime event through predictive maintenance recommendations on pilot tools.",
-      "Show that engineering teams can act on AI recommendations within existing operating reviews without disrupting established fab controls.",
-      "Leave SK Hynix with a line-level scale-up plan covering the next production areas, data requirements, and expected financial upside."
+      {
+        metric: "Excursion root-cause isolation time",
+        target: "35% reduction",
+        businessMeaning: "Proves the pilot can help engineers intervene before losses spread across downstream process steps."
+      },
+      {
+        metric: "Priority alert precision",
+        target: "At least 70% on high-risk signals",
+        businessMeaning: "Confirms the system is improving decision quality rather than creating extra noise."
+      },
+      {
+        metric: "Unplanned downtime on pilot assets",
+        target: "15% reduction",
+        businessMeaning: "Shows predictive maintenance recommendations are translating into real equipment availability."
+      },
+      {
+        metric: "Incremental yield improvement",
+        target: "+0.8 to 1.2 yield points",
+        businessMeaning: "Links pilot value to the line economics leadership actually cares about during the HBM4 ramp."
+      }
     ],
     roi: {
+      investment: "$900K estimated pilot plus first-wave rollout investment",
+      projectedSavings: "$3.4M projected first-year gross savings",
       projectedValue: "$2.5M projected 12-month ROI",
       paybackPeriod: "Under 7 months after scaled deployment",
+      threeYearValue: "$8.9M projected 3-year value",
       valueDrivers: [
         "Incremental yield improvement on a high-value HBM4 production line where small percentage gains carry disproportionate financial impact.",
         "Reduced scrap and faster excursion containment when defect patterns are surfaced earlier in the process window.",
@@ -213,8 +389,16 @@ export const aiDealArchitectMockData: AIDealArchitectBrief = {
         "At least two avoidable downtime or excursion scenarios are prevented over the first year of broader production rollout."
       ]
     },
-    executiveSummary:
-      "Run a six-week pilot inside the HBM4 production ramp to prove that SK Hynix can use AI to improve yield responsiveness and equipment reliability without interrupting existing fab governance. The objective is to show that an operational AI layer can identify excursions sooner, prioritize maintenance more intelligently, and create a credible scale-up case anchored to $2.5M in projected annual ROI."
+    executiveSummary: [
+      "SK Hynix can use this pilot to protect HBM4 yield and uptime at the exact moment when small operational gains have outsized financial impact.",
+      "The six-week scope is intentionally tight: one production segment, two AI workflows, and measurable outcomes delivered on top of current fab systems without disrupting line governance.",
+      "If the pilot proves faster excursion response, lower downtime, and credible economics, leadership gets a scale-ready operating model backed by $2.5M in projected first-year ROI."
+    ],
+    followUpEmail: {
+      subject: "Next steps on the SK Hynix HBM4 AI operations pilot",
+      body:
+        "Hi team,\n\nThank you again for the discussion today. We aligned on three priorities for the HBM4 line: earlier excursion detection, more targeted intervention on constrained assets, and a pilot design that produces measurable operational value without disrupting current fab controls.\n\nAs a next step, we recommend a 6-week pilot scoped to one production segment. The immediate actions would be:\n- confirm the pilot line segment and tool set\n- identify the MES, APC, inspection, metrology, and equipment data owners\n- schedule a technical workshop to define success metrics, alert thresholds, and weekly operating review participants\n\nIf helpful, we can come to the next session with a draft pilot scorecard, a sample executive review format, and a more detailed ROI model based on the line segment you select.\n\nBest,\nSignalDesk"
+    }
   }
 };
 

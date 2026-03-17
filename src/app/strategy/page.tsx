@@ -1,11 +1,6 @@
-import { PagePlaceholder } from "@/components/page-placeholder";
+import { StrategyBrief } from "@/components/strategy-brief";
+import { aiDealArchitectMockData } from "@/data";
 
 export default function StrategyPage() {
-  return (
-    <PagePlaceholder
-      eyebrow="Deal strategy"
-      title="Strategy"
-      description="Placeholder heading for account posture, buying committee motion, and the path to a credible pilot."
-    />
-  );
+  return <StrategyBrief brief={aiDealArchitectMockData} />;
 }
