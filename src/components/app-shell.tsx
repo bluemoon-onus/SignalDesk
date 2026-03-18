@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { accountList, getAccount } from "@/data";
 import { cn } from "@/lib/utils";
+import { GenerateModal } from "./generate-modal";
 
 // ─── Industry color palette ──────────────────────────────────────────────────
 type IndustryColor = {
@@ -224,9 +225,9 @@ export function AppShell({ accountId, children }: AppShellProps) {
           </div>
 
           {/* Sidebar footer */}
-          <div className="border-t border-slate-100 px-6 py-4">
-            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-slate-400">12 accounts</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+          <div className="space-y-3 border-t border-slate-100 px-6 py-4">
+            <GenerateModal />
+            <p className="text-xs leading-5 text-slate-400">
               Pre-call to post-pilot. Every section answers a question the customer is already asking.
             </p>
           </div>
