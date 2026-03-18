@@ -5,12 +5,11 @@ import "@fontsource/manrope/700.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 
-import { AppShell } from "@/components/app-shell";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
-  title: "SignalDesk",
-  description: "Business-first enterprise AI sales demo for strategic account planning."
+  title: "SignalDesk — AI Deal Architect",
+  description: "Full-cycle account briefs for enterprise AI sales. From first signal to signed pilot."
 };
 
 export default function RootLayout({
@@ -20,9 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans">
-        <AppShell>{children}</AppShell>
-      </body>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }

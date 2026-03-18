@@ -4,23 +4,18 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { AIDealArchitectBrief, Opportunity, OpportunityPriority } from "@/types";
+import type { AccountBrief, Opportunity, Priority } from "@/types";
 import { cn } from "@/lib/utils";
 
 type OpportunityBoardProps = {
-  brief: AIDealArchitectBrief;
+  brief: AccountBrief;
 };
 
 type OpportunityView = "board" | "matrix";
 
 const priorityMeta: Record<
-  OpportunityPriority,
-  {
-    label: string;
-    columnDescription: string;
-    badgeClassName: string;
-    panelClassName: string;
-  }
+  Priority,
+  { label: string; columnDescription: string; badgeClassName: string; panelClassName: string }
 > = {
   P1: {
     label: "Do First",
@@ -35,28 +30,16 @@ const priorityMeta: Record<
     panelClassName: "border-blue-100 bg-blue-50/70"
   },
   P3: {
-    label: "Quick Win",
-    columnDescription: "Fast proof point that can build urgency and executive trust.",
+    label: "Sequence Next",
+    columnDescription: "Strategically important — build toward this once early wins land.",
     badgeClassName: "border-violet-200 bg-violet-50 text-violet-700",
     panelClassName: "border-violet-100 bg-violet-50/70"
-  },
-  P4: {
-    label: "Explore Later",
-    columnDescription: "Strategically important, but better sequenced after early wins land.",
-    badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
-    panelClassName: "border-amber-100 bg-amber-50/70"
   }
 };
 
-const priorityOrder: OpportunityPriority[] = ["P1", "P2", "P3", "P4"];
+const priorityOrder: Priority[] = ["P1", "P2", "P3"];
 
-function ScoreDots({
-  value,
-  tone
-}: {
-  value: number;
-  tone: "impact" | "difficulty";
-}) {
+function ScoreDots({ value, tone }: { value: number; tone: "impact" | "difficulty" }) {
   return (
     <div className="flex items-center gap-1.5">
       {Array.from({ length: 10 }, (_, index) => {
@@ -90,23 +73,14 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
       <CardHeader className="space-y-4 pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
-              {meta.label}
-            </div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{meta.label}</div>
             <CardTitle className="text-xl text-slate-950">{opportunity.useCase}</CardTitle>
           </div>
-          <span
-            className={cn(
-              "inline-flex rounded-full border px-3 py-1 text-xs font-semibold",
-              meta.badgeClassName
-            )}
-          >
+          <span className={cn("inline-flex rounded-full border px-3 py-1 text-xs font-semibold", meta.badgeClassName)}>
             {meta.label}
           </span>
         </div>
-        <CardDescription className="text-sm leading-6 text-slate-600">
-          {opportunity.description}
-        </CardDescription>
+        <CardDescription className="text-sm leading-6 text-slate-600">{opportunity.description}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 text-sm text-slate-700">
         <div className="space-y-2">
@@ -116,7 +90,6 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
           </div>
           <ScoreDots value={opportunity.impactScore} tone="impact" />
         </div>
-
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
             <span>Difficulty</span>
@@ -124,11 +97,8 @@ function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
           </div>
           <ScoreDots value={opportunity.difficulty} tone="difficulty" />
         </div>
-
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Time to Value
-          </div>
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Time to Value</div>
           <div className="mt-1 text-base font-semibold text-slate-900">{opportunity.timeToValue}</div>
         </div>
       </CardContent>
@@ -155,7 +125,6 @@ function OpportunityMatrix({ opportunities }: { opportunities: Opportunity[] }) 
             <div className="border-r border-slate-200/90 bg-white" />
             <div className="bg-amber-50/40" />
           </div>
-
           <div className="pointer-events-none absolute left-6 top-6 rounded-full border border-emerald-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
             Quick wins
           </div>
@@ -168,17 +137,13 @@ function OpportunityMatrix({ opportunities }: { opportunities: Opportunity[] }) 
           <div className="pointer-events-none absolute bottom-6 right-6 rounded-full border border-amber-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700">
             Defer for later
           </div>
-
           <div className="relative h-[560px]">
             <div className="absolute inset-y-8 left-0 flex items-center">
-              <div className="-rotate-90 font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
-                Impact
-              </div>
+              <div className="-rotate-90 font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Impact</div>
             </div>
             <div className="absolute inset-x-16 bottom-0 flex justify-center">
               <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Difficulty</div>
             </div>
-
             <div className="absolute inset-x-16 inset-y-10">
               {opportunities.map((opportunity) => {
                 const left = 8 + ((opportunity.difficulty - 1) / 9) * 84;
@@ -194,12 +159,7 @@ function OpportunityMatrix({ opportunities }: { opportunities: Opportunity[] }) 
                     <div className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-lg shadow-slate-200/60">
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-sm font-semibold text-slate-950">{opportunity.useCase}</div>
-                        <span
-                          className={cn(
-                            "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-                            meta.badgeClassName
-                          )}
-                        >
+                        <span className={cn("inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold", meta.badgeClassName)}>
                           {meta.label}
                         </span>
                       </div>
@@ -213,8 +173,7 @@ function OpportunityMatrix({ opportunities }: { opportunities: Opportunity[] }) 
                 );
               })}
             </div>
-
-            <div className="pointer-events-none absolute inset-y-10 left-16 right-0 border-l border-b border-slate-300/90" />
+            <div className="pointer-events-none absolute inset-y-10 left-16 right-0 border-b border-l border-slate-300/90" />
           </div>
         </div>
       </CardContent>
@@ -227,7 +186,7 @@ export function OpportunityBoard({ brief }: OpportunityBoardProps) {
 
   const opportunityGroups = priorityOrder.map((priority) => ({
     priority,
-    opportunities: brief.opportunities.filter((opportunity) => opportunity.priority === priority)
+    opportunities: brief.opportunities.filter((o) => o.priority === priority)
   }));
 
   return (
@@ -238,16 +197,14 @@ export function OpportunityBoard({ brief }: OpportunityBoardProps) {
             <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Opportunity Board</div>
             <div className="space-y-3">
               <CardTitle className="max-w-4xl text-4xl text-slate-950">
-                Prioritize where AI can open the SK Hynix conversation now
+                Prioritize where AI can open the {brief.account.company} conversation now
               </CardTitle>
               <CardDescription className="max-w-3xl text-base leading-7 text-slate-600">
-                This board is designed to sequence the commercial motion. Start with opportunities that can show
-                line-level value during the HBM4 ramp, then expand toward deeper control-layer plays once the pilot
-                creates executive confidence.
+                Sequence the commercial motion. Start with opportunities that can show measurable value during the
+                pilot, then expand toward deeper plays once the first win creates executive confidence.
               </CardDescription>
             </div>
           </div>
-
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
             <Button
               type="button"
@@ -265,14 +222,14 @@ export function OpportunityBoard({ brief }: OpportunityBoardProps) {
               onClick={() => setView("matrix")}
               className={cn(view === "matrix" ? "bg-slate-950 text-white hover:bg-slate-900" : "text-slate-600")}
             >
-              2x2 Matrix
+              2×2 Matrix
             </Button>
           </div>
         </CardHeader>
       </Card>
 
       {view === "board" ? (
-        <div className="grid gap-6 xl:grid-cols-4">
+        <div className="grid gap-6 xl:grid-cols-3">
           {opportunityGroups.map(({ priority, opportunities }) => {
             const meta = priorityMeta[priority];
 
@@ -285,9 +242,7 @@ export function OpportunityBoard({ brief }: OpportunityBoardProps) {
                       {opportunities.length}
                     </span>
                   </div>
-                  <CardDescription className="text-sm leading-6 text-slate-600">
-                    {meta.columnDescription}
-                  </CardDescription>
+                  <CardDescription className="text-sm leading-6 text-slate-600">{meta.columnDescription}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {opportunities.length > 0 ? (
@@ -296,7 +251,7 @@ export function OpportunityBoard({ brief }: OpportunityBoardProps) {
                     ))
                   ) : (
                     <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-4 text-sm text-slate-500">
-                      No opportunities currently sequenced into this lane.
+                      No use cases assigned to this stage.
                     </div>
                   )}
                 </CardContent>

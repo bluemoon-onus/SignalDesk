@@ -1,1 +1,1 @@
-export * from "./ai-deal-architect";
+export * from "./account-brief";
