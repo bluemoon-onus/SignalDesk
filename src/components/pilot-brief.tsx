@@ -1,11 +1,15 @@
+"use client";
+
 import { CheckCircle2, Download, Mail, TimerReset } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AccountBrief } from "@/types";
+import { useLanguage } from "@/contexts/language-context";
 
 export function PilotBrief({ brief }: { brief: AccountBrief }) {
   const { pilotPlan, account } = brief;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6">
@@ -13,18 +17,17 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
       <Card className="border-white/80 bg-white/92">
         <CardHeader className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Pilot and ROI brief</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("pilot.label")}</div>
             <CardTitle className="text-4xl text-slate-950">
-              A {pilotPlan.weeks}-week path to prove value and earn expansion
+              {t("pilot.title", { weeks: String(pilotPlan.weeks) })}
             </CardTitle>
             <CardDescription className="max-w-4xl text-base leading-7 text-slate-600">
-              Designed to give an executive sponsor and delivery team the same answer: what the pilot does,
-              what success looks like, and why the economics justify moving now rather than next quarter.
+              {t("pilot.desc")}
             </CardDescription>
           </div>
           <Button type="button" className="gap-2 bg-slate-950 text-white hover:bg-slate-900">
             <Download className="h-4 w-4" />
-            Download PDF
+            {t("pilot.download")}
           </Button>
         </CardHeader>
       </Card>
@@ -32,13 +35,15 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
       {/* ── Executive summary ────────────────────────────────────────── */}
       <Card className="border-white/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
         <CardHeader className="space-y-3">
-          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">Executive summary</div>
-          <CardTitle className="text-3xl text-white">Three sentences a C-level sponsor can repeat internally</CardTitle>
+          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("pilot.exec_summary.label")}</div>
+          <CardTitle className="text-3xl text-white">{t("pilot.exec_summary.title")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 lg:grid-cols-3">
           {pilotPlan.executiveSummary.map((sentence, index) => (
             <div key={sentence} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Key message {index + 1}</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                {t("pilot.key_message")} {index + 1}
+              </div>
               <p className="mt-3 text-sm leading-7 text-slate-200">{sentence}</p>
             </div>
           ))}
@@ -48,13 +53,10 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
       {/* ── Pilot scope ──────────────────────────────────────────────── */}
       <Card className="border-white/80 bg-white/92">
         <CardHeader className="space-y-3">
-          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Pilot scope</div>
-          <CardTitle className="text-3xl text-slate-950">
-            What is in and what is deliberately out
-          </CardTitle>
+          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("pilot.scope.label")}</div>
+          <CardTitle className="text-3xl text-slate-950">{t("pilot.scope.title")}</CardTitle>
           <CardDescription className="max-w-3xl text-base leading-7 text-slate-600">
-            A focused scope protects the pilot from scope creep and gives the economic buyer a clear line
-            between the pilot commitment and a full-scale expansion decision.
+            {t("pilot.scope.desc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -76,12 +78,11 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
       <Card className="border-white/80 bg-white/92">
         <CardHeader className="space-y-3">
           <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
-            {pilotPlan.weeks}-week pilot timeline
+            {t("pilot.timeline.label", { weeks: String(pilotPlan.weeks) })}
           </div>
-          <CardTitle className="text-3xl text-slate-950">From kickoff to scale decision</CardTitle>
+          <CardTitle className="text-3xl text-slate-950">{t("pilot.timeline.title")}</CardTitle>
           <CardDescription className="text-base leading-7 text-slate-600">
-            Every phase has a defined objective and named deliverables — tight enough to fit inside the
-            current {account.company} engagement, clear enough to hold up in an executive operating review.
+            {t("pilot.timeline.desc", { company: account.company })}
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
@@ -93,7 +94,7 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
                   key={`week-${index + 1}`}
                   className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.16em] text-slate-500"
                 >
-                  Week {index + 1}
+                  {t("pilot.week")} {index + 1}
                 </div>
               ))}
             </div>
@@ -124,7 +125,7 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
                     >
                       {active ? (
                         <div className="space-y-3">
-                          <div className="text-sm font-semibold">Deliverables</div>
+                          <div className="text-sm font-semibold">{t("pilot.deliverables")}</div>
                           <ul className="space-y-2 text-xs leading-5 text-slate-200">
                             {phase.deliverables.map((deliverable) => (
                               <li key={`${phase.name}-${deliverable}`}>{deliverable}</li>
@@ -146,35 +147,32 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
       {/* ── ROI ──────────────────────────────────────────────────────── */}
       <Card className="border-white/80 bg-slate-950 text-white">
         <CardHeader className="space-y-3">
-          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">ROI model</div>
-          <CardTitle className="text-3xl text-white">Economic case for moving forward</CardTitle>
-          <CardDescription className="text-base leading-7 text-slate-400">
-            Conservative estimates based on publicly available benchmark data for comparable enterprise deployments
-            in this sector.
-          </CardDescription>
+          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("pilot.roi.label")}</div>
+          <CardTitle className="text-3xl text-white">{t("pilot.roi.title")}</CardTitle>
+          <CardDescription className="text-base leading-7 text-slate-400">{t("pilot.roi.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Investment</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{t("pilot.roi.investment")}</div>
               <div className="mt-2 text-lg font-semibold text-white">{pilotPlan.roi.investment}</div>
             </div>
             <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Projected savings</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{t("pilot.roi.savings")}</div>
               <div className="mt-2 text-lg font-semibold text-white">{pilotPlan.roi.projectedSavings}</div>
             </div>
             <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Payback period</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{t("pilot.roi.payback")}</div>
               <div className="mt-2 text-lg font-semibold text-white">{pilotPlan.roi.paybackPeriod}</div>
             </div>
             <div className="rounded-[22px] border border-emerald-400/20 bg-emerald-400/10 p-4">
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">3-year value</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">{t("pilot.roi.3yr")}</div>
               <div className="mt-2 text-lg font-semibold text-white">{pilotPlan.roi.threeYearValue}</div>
             </div>
           </div>
 
           <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-400">Projected first-year return</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-400">{t("pilot.roi.year1")}</div>
             <div className="mt-2 text-2xl font-semibold text-white">{pilotPlan.roi.projectedValue}</div>
             <div className="mt-4 space-y-2 text-sm leading-6 text-slate-300">
               {pilotPlan.roi.valueDrivers.map((driver) => (
@@ -193,21 +191,18 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
         <CardHeader className="space-y-3">
           <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
             <Mail className="h-4 w-4 text-slate-700" />
-            Follow-up email draft
+            {t("pilot.email.label")}
           </div>
-          <CardTitle className="text-3xl text-slate-950">Ready-to-send note after the first meeting</CardTitle>
-          <CardDescription className="text-base leading-7 text-slate-600">
-            Reinforces the commercial logic, names the next step, and keeps the momentum from the room
-            alive before the next calendar opens.
-          </CardDescription>
+          <CardTitle className="text-3xl text-slate-950">{t("pilot.email.title")}</CardTitle>
+          <CardDescription className="text-base leading-7 text-slate-600">{t("pilot.email.desc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">Subject</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("pilot.email.subject")}</div>
             <div className="mt-2 text-sm font-semibold text-slate-950">{pilotPlan.followUpEmail.subject}</div>
           </div>
           <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">Body</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("pilot.email.body")}</div>
             <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{pilotPlan.followUpEmail.body}</div>
           </div>
         </CardContent>

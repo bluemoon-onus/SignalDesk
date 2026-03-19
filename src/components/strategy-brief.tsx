@@ -1,13 +1,16 @@
+"use client";
+
 import { Building2, Handshake, ShieldAlert, TimerReset } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AccountBrief, Stakeholder, StakeholderRole, StakeholderStance } from "@/types";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 const stanceStyles: Record<StakeholderStance, string> = {
   Supportive: "border-emerald-200 bg-emerald-50 text-emerald-700",
   Neutral: "border-slate-200 bg-slate-100 text-slate-700",
-  Resistant: "border-rose-200 bg-rose-50 text-rose-700"
+  Resistant: "border-rose-200 bg-rose-50 text-rose-700",
 };
 
 const roleIcons: Record<StakeholderRole, React.ComponentType<{ className?: string }>> = {
@@ -15,10 +18,11 @@ const roleIcons: Record<StakeholderRole, React.ComponentType<{ className?: strin
   Champion: Handshake,
   "Technical Evaluator": TimerReset,
   Blocker: ShieldAlert,
-  "Operational Influencer": ShieldAlert
+  "Operational Influencer": ShieldAlert,
 };
 
 function StakeholderCard({ stakeholder }: { stakeholder: Stakeholder }) {
+  const { t } = useLanguage();
   const Icon = roleIcons[stakeholder.role as StakeholderRole] ?? Building2;
 
   return (
@@ -37,17 +41,17 @@ function StakeholderCard({ stakeholder }: { stakeholder: Stakeholder }) {
             {stakeholder.stance}
           </span>
           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Influence: {stakeholder.influence}
+            {t("strategy.influence")} {stakeholder.influence}
           </div>
         </div>
       </div>
       <div className="mt-5 space-y-4">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">Key concern</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("strategy.key_concern")}</div>
           <p className="mt-2 text-sm leading-6 text-slate-700">{stakeholder.keyConcern}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">Recommended approach</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("strategy.recommended")}</div>
           <p className="mt-2 text-sm leading-6 text-slate-700">{stakeholder.recommendedApproach}</p>
         </div>
       </div>
@@ -57,19 +61,17 @@ function StakeholderCard({ stakeholder }: { stakeholder: Stakeholder }) {
 
 export function StrategyBrief({ brief }: { brief: AccountBrief }) {
   const { stakeholders, dealStrategy } = brief;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6">
       {/* ── Stakeholder map ─────────────────────────────────────────── */}
       <Card className="border-white/80 bg-white/92">
         <CardHeader className="space-y-3">
-          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Deal strategy</div>
-          <CardTitle className="text-4xl text-slate-950">
-            Who moves the deal, who validates it, and who can stall it
-          </CardTitle>
+          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("strategy.map.label")}</div>
+          <CardTitle className="text-4xl text-slate-950">{t("strategy.map.title")}</CardTitle>
           <CardDescription className="max-w-4xl text-base leading-7 text-slate-600">
-            Know who can sign it, who can kill it, and who needs a different message before you walk in the room. This
-            map covers the roles that determine whether the deal closes or stalls.
+            {t("strategy.map.desc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -80,14 +82,12 @@ export function StrategyBrief({ brief }: { brief: AccountBrief }) {
           </div>
 
           <div className="rounded-[28px] border border-slate-200 bg-slate-950 p-6 text-white shadow-lg shadow-slate-300/20">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">Deal motion</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("strategy.deal_motion.label")}</div>
             <div className="mt-3 max-w-2xl text-2xl font-semibold">
-              Anchor on fast operational value, not AI ambition.
+              {t("strategy.deal_motion.heading")}
             </div>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-              Win the economic buyer with a measurable outcome tied to the KPI they already own. Win the champion with
-              signal quality and workflow fit that makes their job easier. Keep the technical evaluator from defining the
-              entire conversation around integration risk.
+              {t("strategy.deal_motion.body")}
             </p>
           </div>
         </CardContent>
@@ -97,22 +97,21 @@ export function StrategyBrief({ brief }: { brief: AccountBrief }) {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <Card className="border-white/80 bg-white/92">
           <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Likely objections</div>
-            <CardTitle className="text-3xl text-slate-950">What they will push on and how to answer</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("strategy.objections.label")}</div>
+            <CardTitle className="text-3xl text-slate-950">{t("strategy.objections.title")}</CardTitle>
             <CardDescription className="text-base leading-7 text-slate-600">
-              The goal is not to debate AI in the abstract. It is to show why this specific pilot is commercially safe,
-              operationally credible, and worth executive time right now.
+              {t("strategy.objections.desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {dealStrategy.objections.map((item) => (
               <div key={item.objection} className="grid gap-4 rounded-[26px] border border-slate-200 bg-slate-50/80 p-5">
                 <div>
-                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">Objection</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("strategy.objection")}</div>
                   <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{item.objection}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">Suggested response</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("strategy.response")}</div>
                   <p className="mt-2 text-sm leading-6 text-slate-700">{item.response}</p>
                 </div>
               </div>
@@ -122,11 +121,10 @@ export function StrategyBrief({ brief }: { brief: AccountBrief }) {
 
         <Card className="border-white/80 bg-slate-950 text-white">
           <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">First meeting agenda</div>
-            <CardTitle className="text-3xl text-white">45-minute path to a real next step</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("strategy.agenda.label")}</div>
+            <CardTitle className="text-3xl text-white">{t("strategy.agenda.title")}</CardTitle>
             <CardDescription className="text-base leading-7 text-slate-300">
-              Built to leave the room with a confirmed scope, named owners, and a calendar path to pilot kickoff — not
-              just a warm handshake and a follow-up.
+              {t("strategy.agenda.desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -148,17 +146,17 @@ export function StrategyBrief({ brief }: { brief: AccountBrief }) {
       {/* ── Message positioning ──────────────────────────────────────── */}
       <Card className="border-white/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
         <CardHeader className="space-y-3">
-          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">Message positioning</div>
-          <CardTitle className="text-3xl text-white">The narrative that should carry this deal</CardTitle>
+          <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("strategy.positioning.label")}</div>
+          <CardTitle className="text-3xl text-white">{t("strategy.positioning.title")}</CardTitle>
           <CardDescription className="text-base leading-7 text-slate-300">
-            These three sentences are the core talk track for executive, technical, and commercial conversations.
+            {t("strategy.positioning.desc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 lg:grid-cols-3">
           {dealStrategy.positioning.map((sentence, index) => (
             <div key={sentence} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
               <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                Talk track {index + 1}
+                {t("strategy.talk_track")} {index + 1}
               </div>
               <p className="mt-3 text-sm leading-7 text-slate-200">{sentence}</p>
             </div>

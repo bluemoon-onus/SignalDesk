@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { BarChart3, BriefcaseBusiness, Compass, Loader2, Sparkles, Target, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AccountBrief } from "@/types";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 import { OpportunityBoard } from "./opportunity-board";
 import { StrategyBrief } from "./strategy-brief";
 import { PilotBrief } from "./pilot-brief";
@@ -39,16 +41,10 @@ const INDUSTRIES = [
 type Provider = "claude" | "openai";
 type BriefTab = "snapshot" | "opportunities" | "strategy" | "pilot";
 
-const briefTabs: { key: BriefTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: "snapshot",      label: "Snapshot",     icon: BarChart3 },
-  { key: "opportunities", label: "Opportunities", icon: Target },
-  { key: "strategy",      label: "Strategy",      icon: Compass },
-  { key: "pilot",         label: "Pilot & ROI",   icon: BriefcaseBusiness },
-];
-
 // ─── Snapshot tab content ─────────────────────────────────────────────────────
 function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
   const { account, pilotPlan } = brief;
+  const { t } = useLanguage();
 
   const severityStyles = {
     High: { badge: "border-rose-200 bg-rose-50 text-rose-700",   dot: "bg-rose-500" },
@@ -56,12 +52,14 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
     Low:  { badge: "border-sky-200 bg-sky-50 text-sky-700",       dot: "bg-sky-500" },
   } as const;
 
+  const severityLabel = { High: t("severity.high"), Med: t("severity.med"), Low: t("severity.low") };
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_420px]">
         <Card className="border-white/80 bg-white/92">
           <CardHeader className="space-y-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Account Snapshot</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("snapshot.label")}</div>
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <CardTitle className="text-5xl text-slate-950">{account.company}</CardTitle>
@@ -76,21 +74,19 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">Commercial urgency</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">{t("snapshot.commercial_urgency")}</div>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{t("snapshot.commercial_urgency.body")}</p>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">{t("snapshot.pilot_window")}</div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                The window is open because of operational pressures the account is already feeling — not because of a future transformation mandate.
+                {t("snapshot.pilot_window.body", { weeks: String(pilotPlan.weeks) })}
               </p>
             </div>
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">Pilot window</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">{t("snapshot.financial_upside")}</div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                {pilotPlan.weeks}-week pilot designed to prove value fast enough for the current operating review — not a future transformation budget cycle.
-              </p>
-            </div>
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">Financial upside</div>
-              <p className="mt-3 text-sm leading-6 text-slate-700">
-                {pilotPlan.roi.projectedValue} anchored to measurable operational improvements — not a generic AI transformation story.
+                {t("snapshot.financial_upside.body", { value: pilotPlan.roi.projectedValue })}
               </p>
             </div>
           </CardContent>
@@ -98,11 +94,9 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
 
         <Card className="border-amber-200/80 bg-gradient-to-br from-amber-50 via-amber-100/80 to-orange-100/70">
           <CardHeader className="space-y-4">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-amber-800">Recent trigger events</div>
-            <CardTitle className="text-3xl text-amber-950">Why the window is open right now</CardTitle>
-            <CardDescription className="text-base leading-7 text-amber-900/80">
-              Recent events that create commercial urgency — each one increases appetite for a pilot that shows operational value without waiting for a broader program.
-            </CardDescription>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-amber-800">{t("snapshot.triggers.label")}</div>
+            <CardTitle className="text-3xl text-amber-950">{t("snapshot.triggers.title")}</CardTitle>
+            <CardDescription className="text-base leading-7 text-amber-900/80">{t("snapshot.triggers.desc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {account.triggers.map((trigger) => (
@@ -111,7 +105,7 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
                 <div className="mt-2 text-sm font-semibold text-amber-950">{trigger.title}</div>
                 <p className="mt-2 text-sm leading-6 text-amber-900/80">{trigger.detail}</p>
                 <div className="mt-3 rounded-xl border border-amber-200/80 bg-white/60 px-3 py-2">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">Commercial implication</div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">{t("snapshot.triggers.implication")}</div>
                   <p className="mt-1 text-xs leading-5 text-amber-900">{trigger.impact}</p>
                 </div>
               </div>
@@ -123,8 +117,8 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
         <Card className="border-white/80 bg-white/92">
           <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Pain points</div>
-            <CardTitle className="text-3xl text-slate-950">What they are actually losing sleep over right now</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("snapshot.pain.label")}</div>
+            <CardTitle className="text-3xl text-slate-950">{t("snapshot.pain.title")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             {account.painPoints.map((painPoint) => {
@@ -135,7 +129,7 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
                     <div className="text-lg font-semibold text-slate-950">{painPoint.title}</div>
                     <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${style.badge}`}>
                       <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
-                      {painPoint.severity}
+                      {severityLabel[painPoint.severity]}
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{painPoint.detail}</p>
@@ -147,8 +141,8 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
 
         <Card className="border-white/80 bg-slate-950 text-white">
           <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">Business objectives</div>
-            <CardTitle className="text-3xl text-white">What leadership will actually fund</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("snapshot.objectives.label")}</div>
+            <CardTitle className="text-3xl text-white">{t("snapshot.objectives.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {account.objectives.map((objective) => (
@@ -171,7 +165,9 @@ function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
 
 // ─── Main modal component ─────────────────────────────────────────────────────
 export function GenerateModal() {
+  const { t, lang } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [company, setCompany] = useState("");
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
   const [situation, setSituation] = useState("");
@@ -181,6 +177,9 @@ export function GenerateModal() {
   const [error, setError] = useState<string | null>(null);
   const [brief, setBrief] = useState<AccountBrief | null>(null);
   const [activeTab, setActiveTab] = useState<BriefTab>("snapshot");
+
+  // Mount guard for portal
+  useEffect(() => { setMounted(true); }, []);
 
   // Load persisted preferences
   useEffect(() => {
@@ -197,8 +196,12 @@ export function GenerateModal() {
   }, []);
 
   const handleGenerate = async () => {
-    if (!company.trim() || !apiKey.trim()) {
-      setError("Company name and API key are required.");
+    if (!company.trim()) {
+      setError(lang === "ko" ? "회사명을 입력해 주세요." : "Company name is required.");
+      return;
+    }
+    if (!apiKey.trim()) {
+      setError(lang === "ko" ? "API 키를 입력해 주세요." : "API key is required.");
       return;
     }
     setLoading(true);
@@ -217,7 +220,7 @@ export function GenerateModal() {
       setBrief(data.brief);
       setActiveTab("snapshot");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Generation failed. Check your API key and try again.");
+      setError(err instanceof Error ? err.message : (lang === "ko" ? "생성 실패. API 키를 확인해 주세요." : "Generation failed. Check your API key and try again."));
     } finally {
       setLoading(false);
     }
@@ -240,6 +243,218 @@ export function GenerateModal() {
     setActiveTab("snapshot");
   };
 
+  const briefTabs: { key: BriefTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { key: "snapshot",      label: t("nav.snapshot"),      icon: BarChart3 },
+    { key: "opportunities", label: t("nav.opportunities"), icon: Target },
+    { key: "strategy",      label: t("nav.strategy"),      icon: Compass },
+    { key: "pilot",         label: t("nav.pilot"),         icon: BriefcaseBusiness },
+  ];
+
+  const modalContent = open ? (
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-sm lg:p-8">
+      <div className="w-full max-w-5xl">
+        {/* Modal header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-slate-400">{t("gen.label")}</div>
+            <h2 className="text-xl font-semibold text-white">
+              {brief
+                ? t("gen.title.result", { company: brief.account.company })
+                : t("gen.title")}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {brief && (
+              <button
+                type="button"
+                onClick={handleReset}
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:bg-white/10"
+              >
+                {t("gen.another")}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleClose}
+              className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        {!brief && (
+          <Card className="border-white/10 bg-slate-900">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-2xl text-white">{t("gen.form.title")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("gen.form.desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid gap-5 lg:grid-cols-2">
+                {/* Company */}
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    {t("gen.company")} <span className="text-rose-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder={t("gen.company.placeholder")}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none focus:ring-0"
+                  />
+                </div>
+
+                {/* Industry */}
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">{t("gen.industry")}</label>
+                  <select
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none"
+                  >
+                    {INDUSTRIES.map((ind) => (
+                      <option key={ind} value={ind} className="bg-slate-800 text-white">{ind}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Situation */}
+              <div className="space-y-2">
+                <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                  {t("gen.situation")} <span className="text-slate-500">{t("gen.situation.opt")}</span>
+                </label>
+                <textarea
+                  value={situation}
+                  onChange={(e) => setSituation(e.target.value)}
+                  placeholder={t("gen.situation.placeholder")}
+                  rows={4}
+                  className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none"
+                />
+              </div>
+
+              {/* Provider + API key */}
+              <div className="grid gap-5 lg:grid-cols-[200px_1fr]">
+                {/* Provider toggle */}
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">{t("gen.model")}</label>
+                  <div className="flex rounded-xl border border-white/10 bg-white/5 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setProvider("claude")}
+                      className={cn(
+                        "flex-1 rounded-lg py-2 text-xs font-semibold transition-all",
+                        provider === "claude"
+                          ? "bg-white text-slate-950 shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      )}
+                    >
+                      Claude
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProvider("openai")}
+                      className={cn(
+                        "flex-1 rounded-lg py-2 text-xs font-semibold transition-all",
+                        provider === "openai"
+                          ? "bg-white text-slate-950 shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      )}
+                    >
+                      GPT-4o
+                    </button>
+                  </div>
+                </div>
+
+                {/* API key */}
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    {provider === "claude" ? "Anthropic" : "OpenAI"} {t("gen.apikey")}{" "}
+                    <span className="text-rose-400">*</span>
+                    <span className="ml-2 text-slate-500">{t("gen.apikey.stored")}</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder={provider === "claude" ? "sk-ant-..." : "sk-..."}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="rounded-xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-300">
+                  {error}
+                </div>
+              )}
+
+              {/* Generate button — always enabled, validates on click */}
+              <Button
+                type="button"
+                onClick={handleGenerate}
+                disabled={loading}
+                className="w-full gap-2 bg-white text-slate-950 hover:bg-slate-100 disabled:opacity-40"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("gen.loading")}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    {t("gen.submit")}
+                  </>
+                )}
+              </Button>
+
+              <p className="text-center text-xs text-slate-500">
+                {t("gen.privacy", { provider: provider === "claude" ? "Anthropic" : "OpenAI" })}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Generated brief */}
+        {brief && (
+          <div className="space-y-4">
+            {/* Tab navigation */}
+            <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-1.5">
+              {briefTabs.map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setActiveTab(key)}
+                  className={cn(
+                    "flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all",
+                    activeTab === key
+                      ? "bg-white text-slate-950 shadow-sm"
+                      : "text-slate-400 hover:text-white"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div>
+              {activeTab === "snapshot"      && <GeneratedSnapshot brief={brief} />}
+              {activeTab === "opportunities" && <OpportunityBoard brief={brief} />}
+              {activeTab === "strategy"      && <StrategyBrief brief={brief} />}
+              {activeTab === "pilot"         && <PilotBrief brief={brief} />}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null;
+
   return (
     <>
       {/* Trigger button */}
@@ -249,214 +464,11 @@ export function GenerateModal() {
         className="flex w-full items-center gap-2.5 rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 px-4 py-3 text-left text-sm font-semibold text-white transition-all hover:from-slate-800 hover:to-slate-700"
       >
         <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-        Generate new account
+        {t("gen.title")}
       </button>
 
-      {/* Modal overlay */}
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-sm lg:p-8">
-          <div className="w-full max-w-5xl">
-            {/* Modal header */}
-            <div className="mb-4 flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-slate-400">AI Generation</div>
-                <h2 className="text-xl font-semibold text-white">
-                  {brief ? `${brief.account.company} — Generated brief` : "Generate a new account brief"}
-                </h2>
-              </div>
-              <div className="flex items-center gap-2">
-                {brief && (
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 transition-colors hover:bg-white/10"
-                  >
-                    Generate another
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Form */}
-            {!brief && (
-              <Card className="border-white/10 bg-slate-900">
-                <CardHeader className="space-y-2">
-                  <CardTitle className="text-2xl text-white">Account details</CardTitle>
-                  <CardDescription className="text-slate-400">
-                    Provide context and the model will generate a full MEDDPICC-structured account brief — pain points, stakeholders, objections, pilot plan, and ROI in one pass.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="grid gap-5 lg:grid-cols-2">
-                    {/* Company */}
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                        Company name <span className="text-rose-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        placeholder="e.g. Kakao Corporation"
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none focus:ring-0"
-                      />
-                    </div>
-
-                    {/* Industry */}
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">Industry</label>
-                      <select
-                        value={industry}
-                        onChange={(e) => setIndustry(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-white/30 focus:outline-none"
-                      >
-                        {INDUSTRIES.map((ind) => (
-                          <option key={ind} value={ind} className="bg-slate-800 text-white">{ind}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Situation */}
-                  <div className="space-y-2">
-                    <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                      Situation context <span className="text-slate-500">(optional — the model generates if left blank)</span>
-                    </label>
-                    <textarea
-                      value={situation}
-                      onChange={(e) => setSituation(e.target.value)}
-                      placeholder="Describe the account situation, key initiatives, challenges, or anything you know about this prospect. The more context you provide, the more specific and accurate the brief will be."
-                      rows={4}
-                      className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Provider + API key */}
-                  <div className="grid gap-5 lg:grid-cols-[200px_1fr]">
-                    {/* Provider toggle */}
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">Model</label>
-                      <div className="flex rounded-xl border border-white/10 bg-white/5 p-1">
-                        <button
-                          type="button"
-                          onClick={() => setProvider("claude")}
-                          className={cn(
-                            "flex-1 rounded-lg py-2 text-xs font-semibold transition-all",
-                            provider === "claude"
-                              ? "bg-white text-slate-950 shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                          )}
-                        >
-                          Claude
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setProvider("openai")}
-                          className={cn(
-                            "flex-1 rounded-lg py-2 text-xs font-semibold transition-all",
-                            provider === "openai"
-                              ? "bg-white text-slate-950 shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                          )}
-                        >
-                          GPT-4o
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* API key */}
-                    <div className="space-y-2">
-                      <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                        {provider === "claude" ? "Anthropic" : "OpenAI"} API key{" "}
-                        <span className="text-rose-400">*</span>
-                        <span className="ml-2 text-slate-500">— saved to localStorage</span>
-                      </label>
-                      <input
-                        type="password"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder={provider === "claude" ? "sk-ant-..." : "sk-..."}
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Error */}
-                  {error && (
-                    <div className="rounded-xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-300">
-                      {error}
-                    </div>
-                  )}
-
-                  {/* Generate button */}
-                  <Button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={loading || !company.trim() || !apiKey.trim()}
-                    className="w-full gap-2 bg-white text-slate-950 hover:bg-slate-100 disabled:opacity-40"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Generating brief — this takes 20–40 seconds…
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Generate account brief
-                      </>
-                    )}
-                  </Button>
-
-                  <p className="text-center text-xs text-slate-500">
-                    Your API key is sent only to {provider === "claude" ? "Anthropic" : "OpenAI"} via your own server. It is never stored externally.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Generated brief */}
-            {brief && (
-              <div className="space-y-4">
-                {/* Tab navigation */}
-                <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-1.5">
-                  {briefTabs.map(({ key, label, icon: Icon }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setActiveTab(key)}
-                      className={cn(
-                        "flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all",
-                        activeTab === key
-                          ? "bg-white text-slate-950 shadow-sm"
-                          : "text-slate-400 hover:text-white"
-                      )}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Tab content */}
-                <div>
-                  {activeTab === "snapshot"      && <GeneratedSnapshot brief={brief} />}
-                  {activeTab === "opportunities" && <OpportunityBoard brief={brief} />}
-                  {activeTab === "strategy"      && <StrategyBrief brief={brief} />}
-                  {activeTab === "pilot"         && <PilotBrief brief={brief} />}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Modal rendered via portal at document.body to avoid stacking context issues */}
+      {mounted && createPortal(modalContent, document.body)}
     </>
   );
 }

@@ -1,39 +1,38 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { notFound } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAccount } from "@/data";
+import { useLanguage } from "@/contexts/language-context";
 
-const severityStyles = {
-  High: {
-    badge: "border-rose-200 bg-rose-50 text-rose-700",
-    dot: "bg-rose-500"
-  },
-  Med: {
-    badge: "border-amber-200 bg-amber-50 text-amber-700",
-    dot: "bg-amber-500"
-  },
-  Low: {
-    badge: "border-sky-200 bg-sky-50 text-sky-700",
-    dot: "bg-sky-500"
-  }
-} as const;
-
-type Props = { params: Promise<{ accountId: string }> };
-
-export default async function SnapshotPage({ params }: Props) {
-  const { accountId } = await params;
+export default function SnapshotPage() {
+  const params = useParams();
+  const accountId = params.accountId as string;
   const brief = getAccount(accountId);
+  const { t } = useLanguage();
 
   if (!brief) notFound();
 
   const { account, pilotPlan } = brief;
+
+  const severityStyles = {
+    High: { badge: "border-rose-200 bg-rose-50 text-rose-700",   dot: "bg-rose-500" },
+    Med:  { badge: "border-amber-200 bg-amber-50 text-amber-700", dot: "bg-amber-500" },
+    Low:  { badge: "border-sky-200 bg-sky-50 text-sky-700",       dot: "bg-sky-500" },
+  } as const;
+
+  const severityLabel = { High: t("severity.high"), Med: t("severity.med"), Low: t("severity.low") };
 
   return (
     <div className="space-y-6">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_420px]">
         <Card className="border-white/80 bg-white/92">
           <CardHeader className="space-y-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Account Snapshot</div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
+              {t("snapshot.label")}
+            </div>
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <CardTitle className="text-5xl text-slate-950">{account.company}</CardTitle>
@@ -48,21 +47,27 @@ export default async function SnapshotPage({ params }: Props) {
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">Commercial urgency</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">
+                {t("snapshot.commercial_urgency")}
+              </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                The window is open because of operational pressures the account is already feeling — not because of a future transformation mandate.
+                {t("snapshot.commercial_urgency.body")}
               </p>
             </div>
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">Pilot window</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">
+                {t("snapshot.pilot_window")}
+              </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                {pilotPlan.weeks}-week pilot designed to prove value fast enough for the current operating review — not a future transformation budget cycle.
+                {t("snapshot.pilot_window.body", { weeks: String(pilotPlan.weeks) })}
               </p>
             </div>
             <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">Financial upside</div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-500">
+                {t("snapshot.financial_upside")}
+              </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
-                {pilotPlan.roi.projectedValue} anchored to measurable operational improvements — not a generic AI transformation story.
+                {t("snapshot.financial_upside.body", { value: pilotPlan.roi.projectedValue })}
               </p>
             </div>
           </CardContent>
@@ -70,10 +75,12 @@ export default async function SnapshotPage({ params }: Props) {
 
         <Card className="border-amber-200/80 bg-gradient-to-br from-amber-50 via-amber-100/80 to-orange-100/70">
           <CardHeader className="space-y-4">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-amber-800">Recent trigger events</div>
-            <CardTitle className="text-3xl text-amber-950">Why the window is open right now</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-amber-800">
+              {t("snapshot.triggers.label")}
+            </div>
+            <CardTitle className="text-3xl text-amber-950">{t("snapshot.triggers.title")}</CardTitle>
             <CardDescription className="text-base leading-7 text-amber-900/80">
-              Recent events that create commercial urgency — each one increases appetite for a pilot that shows operational value without waiting for a broader program.
+              {t("snapshot.triggers.desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -83,7 +90,9 @@ export default async function SnapshotPage({ params }: Props) {
                 <div className="mt-2 text-sm font-semibold text-amber-950">{trigger.title}</div>
                 <p className="mt-2 text-sm leading-6 text-amber-900/80">{trigger.detail}</p>
                 <div className="mt-3 rounded-xl border border-amber-200/80 bg-white/60 px-3 py-2">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">Commercial implication</div>
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-amber-700">
+                    {t("snapshot.triggers.implication")}
+                  </div>
                   <p className="mt-1 text-xs leading-5 text-amber-900">{trigger.impact}</p>
                 </div>
               </div>
@@ -95,23 +104,24 @@ export default async function SnapshotPage({ params }: Props) {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
         <Card className="border-white/80 bg-white/92">
           <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">Pain points</div>
-            <CardTitle className="text-3xl text-slate-950">What they are actually losing sleep over right now</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
+              {t("snapshot.pain.label")}
+            </div>
+            <CardTitle className="text-3xl text-slate-950">{t("snapshot.pain.title")}</CardTitle>
             <CardDescription className="text-base leading-7 text-slate-600">
-              These are not generic modernization issues. These are live operational pressures — tied to costs, timelines, and risks the account is already managing.
+              {t("snapshot.pain.desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             {account.painPoints.map((painPoint) => {
               const style = severityStyles[painPoint.severity];
-
               return (
                 <div key={painPoint.title} className="rounded-[26px] border border-slate-200 bg-slate-50/70 p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="text-lg font-semibold text-slate-950">{painPoint.title}</div>
                     <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${style.badge}`}>
                       <span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} />
-                      {painPoint.severity}
+                      {severityLabel[painPoint.severity]}
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{painPoint.detail}</p>
@@ -123,10 +133,12 @@ export default async function SnapshotPage({ params }: Props) {
 
         <Card className="border-white/80 bg-slate-950 text-white">
           <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">Business objectives</div>
-            <CardTitle className="text-3xl text-white">What leadership will actually fund</CardTitle>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">
+              {t("snapshot.objectives.label")}
+            </div>
+            <CardTitle className="text-3xl text-white">{t("snapshot.objectives.title")}</CardTitle>
             <CardDescription className="text-base leading-7 text-slate-300">
-              Tie every AI conversation directly to the KPIs this account will defend in operating reviews — not to AI capability in the abstract.
+              {t("snapshot.objectives.desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
+import { LanguageProvider } from "@/contexts/language-context";
 import { getAccount } from "@/data";
 
 type AccountLayoutProps = {
@@ -16,5 +17,9 @@ export default async function AccountLayout({ children, params }: AccountLayoutP
     notFound();
   }
 
-  return <AppShell accountId={accountId}>{children}</AppShell>;
+  return (
+    <LanguageProvider>
+      <AppShell accountId={accountId}>{children}</AppShell>
+    </LanguageProvider>
+  );
 }
