@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 
 import { StrategyBrief } from "@/components/strategy-brief";
 import { getBrief } from "@/lib/brief-store";
+import { localizeBrief } from "@/lib/locale";
 import { useLanguage } from "@/contexts/language-context";
 import type { AccountBrief } from "@/types";
 
 export default function StrategyPage() {
   const params = useParams();
   const accountId = params.accountId as string;
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const [brief, setBrief] = useState<AccountBrief | null>(() => getBrief(accountId) ?? null);
 
@@ -28,5 +29,6 @@ export default function StrategyPage() {
     );
   }
 
-  return <StrategyBrief brief={brief} />;
+  const localBrief = localizeBrief(brief, accountId, lang);
+  return <StrategyBrief brief={localBrief} />;
 }

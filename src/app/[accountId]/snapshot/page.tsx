@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getBrief } from "@/lib/brief-store";
+import { localizeBrief } from "@/lib/locale";
 import { useLanguage } from "@/contexts/language-context";
 import type { AccountBrief } from "@/types";
 
 export default function SnapshotPage() {
   const params = useParams();
   const accountId = params.accountId as string;
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   // Support both static (sync) and generated (async from localStorage) briefs
   const [brief, setBrief] = useState<AccountBrief | null>(() => getBrief(accountId) ?? null);
@@ -35,7 +36,8 @@ export default function SnapshotPage() {
     );
   }
 
-  const { account, pilotPlan } = brief;
+  const localBrief = localizeBrief(brief, accountId, lang);
+  const { account, pilotPlan } = localBrief;
   const severityLabel = { High: t("severity.high"), Med: t("severity.med"), Low: t("severity.low") };
 
   return (

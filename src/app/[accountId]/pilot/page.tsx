@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 
 import { PilotBrief } from "@/components/pilot-brief";
 import { getBrief } from "@/lib/brief-store";
+import { localizeBrief } from "@/lib/locale";
 import { useLanguage } from "@/contexts/language-context";
 import type { AccountBrief } from "@/types";
 
 export default function PilotPage() {
   const params = useParams();
   const accountId = params.accountId as string;
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const [brief, setBrief] = useState<AccountBrief | null>(() => getBrief(accountId) ?? null);
 
@@ -28,5 +29,6 @@ export default function PilotPage() {
     );
   }
 
-  return <PilotBrief brief={brief} />;
+  const localBrief = localizeBrief(brief, accountId, lang);
+  return <PilotBrief brief={localBrief} />;
 }

@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 
 import { OpportunityBoard } from "@/components/opportunity-board";
 import { getBrief } from "@/lib/brief-store";
+import { localizeBrief } from "@/lib/locale";
 import { useLanguage } from "@/contexts/language-context";
 import type { AccountBrief } from "@/types";
 
 export default function OpportunitiesPage() {
   const params = useParams();
   const accountId = params.accountId as string;
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const [brief, setBrief] = useState<AccountBrief | null>(() => getBrief(accountId) ?? null);
 
@@ -28,5 +29,6 @@ export default function OpportunitiesPage() {
     );
   }
 
-  return <OpportunityBoard brief={brief} />;
+  const localBrief = localizeBrief(brief, accountId, lang);
+  return <OpportunityBoard brief={localBrief} />;
 }

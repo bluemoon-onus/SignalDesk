@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
 import { SUPPORTED_LANGS } from "@/lib/i18n";
 import { loadSavedAccounts, deleteSavedAccount, type SavedAccount } from "@/lib/brief-store";
+import { localizeCompanyName, localizeIndustry } from "@/lib/locale";
 import { GenerateModal } from "./generate-modal";
 
 // ─── Industry color palette ───────────────────────────────────────────────────
@@ -172,8 +173,8 @@ export function AppShell({ accountId, children }: AppShellProps) {
                     <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-slate-500">
                       {t("shell.active_account")}
                     </div>
-                    <div className="mt-0.5 truncate text-sm font-semibold text-slate-950">{currentAccount.company}</div>
-                    <div className="truncate text-xs text-slate-500">{currentAccount.industry}</div>
+                    <div className="mt-0.5 truncate text-sm font-semibold text-slate-950">{localizeCompanyName(currentAccount.id, currentAccount.company, lang)}</div>
+                    <div className="truncate text-xs text-slate-500">{localizeIndustry(currentAccount.industry, lang)}</div>
                   </div>
                 </div>
                 <ChevronDown className={cn("ml-2 h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200", switcherOpen && "rotate-180")} />
@@ -203,7 +204,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
                               )}
                             >
                               <span className={cn("font-medium", acct.id === accountId ? "text-slate-950" : "text-slate-700")}>
-                                {acct.company}
+                                {localizeCompanyName(acct.id, acct.company, lang)}
                               </span>
                               {acct.id === accountId && (
                                 <span className={cn("ml-2 h-2 w-2 shrink-0 rounded-full", color.activeDot)} />
@@ -334,10 +335,10 @@ export function AppShell({ accountId, children }: AppShellProps) {
                   {t("shell.account_focus")}
                 </p>
                 <div className="flex flex-wrap items-center gap-2.5">
-                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">{currentAccount.company}</h2>
+                  <h2 className="text-xl font-semibold tracking-tight text-slate-950">{localizeCompanyName(currentAccount.id, currentAccount.company, lang)}</h2>
                   <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold", currentColor.badge)}>
                     <span className={cn("h-1.5 w-1.5 rounded-full", currentColor.dot)} />
-                    {currentAccount.industry}
+                    {localizeIndustry(currentAccount.industry, lang)}
                   </span>
                 </div>
               </div>
