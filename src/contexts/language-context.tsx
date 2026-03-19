@@ -19,8 +19,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
-    const saved = localStorage.getItem("sd_lang") as Lang | null;
-    if (saved === "en" || saved === "ko") setLangState(saved);
+    const saved = localStorage.getItem("sd_lang");
+    // Accept any saved lang code — SUPPORTED_LANGS controls what's visible in the toggle
+    if (saved) setLangState(saved as Lang);
   }, []);
 
   const setLang = useCallback((l: Lang) => {

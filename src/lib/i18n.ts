@@ -1,6 +1,18 @@
-export type Lang = "en" | "ko";
+// Extensible lang type — add new codes to SUPPORTED_LANGS to enable them
+export type Lang = string;
 
-type Dict = Record<string, { en: string; ko: string }>;
+// Supported languages — add entries here to unlock new languages in the toggle
+export const SUPPORTED_LANGS: { code: string; nativeLabel: string }[] = [
+  { code: "en", nativeLabel: "English" },
+  { code: "ko", nativeLabel: "한국어" },
+  // { code: "ja", nativeLabel: "日本語" },  // Uncomment to add Japanese
+  // { code: "zh", nativeLabel: "中文" },
+];
+
+export const DEFAULT_LANG = "en";
+
+// Dict values are keyed by lang code — fallback to "en" if a translation is missing
+type Dict = Record<string, Record<string, string>>;
 
 // ─── All UI strings ───────────────────────────────────────────────────────────
 export const dict: Dict = {
@@ -207,6 +219,13 @@ export const dict: Dict = {
   "pilot.email.subject": { en: "Subject", ko: "제목" },
   "pilot.email.body": { en: "Body", ko: "본문" },
 
+  // ── Shell admin + saved accounts ─────────────────────────────────────────
+  "shell.admin_mode": { en: "Admin", ko: "관리자" },
+  "shell.exit_admin": { en: "Exit admin", ko: "관리자 종료" },
+  "shell.generated_section": { en: "Generated", ko: "AI 생성" },
+  "shell.no_saved": { en: "No saved accounts", ko: "저장된 계정 없음" },
+  "shell.delete_account": { en: "Remove this account", ko: "계정 삭제" },
+
   // ── Generate modal ───────────────────────────────────────────────────────
   "gen.label": { en: "AI Generation", ko: "AI 생성" },
   "gen.title": { en: "Generate a new account brief", ko: "새 계정 브리프 생성" },
@@ -233,16 +252,32 @@ export const dict: Dict = {
     ko: "고객 상황, 주요 이니셔티브, 과제 등 알고 있는 내용을 입력하세요. 컨텍스트가 많을수록 더 구체적이고 정확한 브리프가 생성됩니다.",
   },
   "gen.model": { en: "Model", ko: "모델" },
-  "gen.apikey": { en: "API key", ko: "API 키" },
-  "gen.apikey.stored": { en: "— saved to localStorage", ko: "— localStorage에 저장됨" },
+  "gen.model.coming_soon": { en: "Coming soon", ko: "출시 예정" },
+  "gen.tickets": { en: "{{count}} left today", ko: "오늘 {{count}}회 남음" },
+  "gen.tickets.zero": { en: "Daily limit reached — resets at midnight", ko: "오늘 한도 초과 — 자정에 초기화" },
+  "gen.tickets.unknown": { en: "Checking quota…", ko: "한도 확인 중…" },
+  "gen.validating": { en: "Checking company name…", ko: "회사명 확인 중…" },
+  "gen.confirm.title": { en: "Confirm company name", ko: "회사명 확인" },
+  "gen.confirm.body": {
+    en: "We couldn't verify \"{{company}}\" as a recognized company. Could be a typo or a niche brand.",
+    ko: "\"{{company}}\"을(를) 확인할 수 없습니다. 오타이거나 잘 알려지지 않은 기업일 수 있습니다.",
+  },
+  "gen.confirm.suggest": {
+    en: "Did you mean: {{name}}?",
+    ko: "혹시 이 기업인가요: {{name}}?",
+  },
+  "gen.confirm.proceed": { en: "Yes, generate anyway", ko: "맞아요, 계속 진행" },
+  "gen.confirm.edit": { en: "Edit name", ko: "이름 수정" },
   "gen.loading": {
     en: "Generating brief — this takes 20–40 seconds…",
     ko: "브리프 생성 중 — 20~40초 정도 소요됩니다…",
   },
   "gen.submit": { en: "Generate account brief", ko: "계정 브리프 생성" },
-  "gen.privacy": {
-    en: "Your API key is sent only to {{provider}} via your own server. It is never stored externally.",
-    ko: "API 키는 귀하의 서버를 통해 {{provider}}에만 전송됩니다. 외부에 저장되지 않습니다.",
+  "gen.save": { en: "Save to my accounts", ko: "내 계정에 저장" },
+  "gen.saved": { en: "Saved ✓", ko: "저장됨 ✓" },
+  "gen.footer": {
+    en: "Powered by Claude — API costs are covered for this demo.",
+    ko: "Claude 기반 — 이 데모의 API 비용은 제공자가 부담합니다.",
   },
 };
 

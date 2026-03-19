@@ -2,7 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { BarChart3, BriefcaseBusiness, Compass, Loader2, Sparkles, Target, X } from "lucide-react";
+import {
+  BarChart3,
+  BriefcaseBusiness,
+  Bookmark,
+  BookmarkCheck,
+  Compass,
+  Loader2,
+  Sparkles,
+  Target,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,10 +48,53 @@ const INDUSTRIES = [
   "Other",
 ];
 
-type Provider = "claude" | "openai";
+// ─── Provider definitions ─────────────────────────────────────────────────────
+const PROVIDERS = [
+  { key: "claude",  label: "Claude",  enabled: true  },
+  { key: "openai",  label: "GPT-4o",  enabled: false },
+  { key: "gemini",  label: "Gemini",  enabled: false },
+] as const;
+
+type Provider = (typeof PROVIDERS)[number]["key"];
+
+// ─── Saved account helpers ────────────────────────────────────────────────────
+export interface SavedAccount {
+  id: string;
+  company: string;
+  industry: string;
+  savedAt: number;
+  brief: AccountBrief;
+}
+
+export function loadSavedAccounts(): SavedAccount[] {
+  try {
+    if (typeof window === "undefined") return [];
+    return JSON.parse(localStorage.getItem("sd_saved_accounts") ?? "[]") as SavedAccount[];
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedAccount(brief: AccountBrief): string {
+  const id = `gen-${Date.now()}`;
+  const accounts = loadSavedAccounts();
+  accounts.push({
+    id,
+    company: brief.account.company,
+    industry: brief.account.industry,
+    savedAt: Date.now(),
+    brief,
+  });
+  localStorage.setItem("sd_saved_accounts", JSON.stringify(accounts));
+  // Notify AppShell to refresh its saved accounts list
+  window.dispatchEvent(new Event("sd:accounts-updated"));
+  return id;
+}
+
+// ─── Tab types ────────────────────────────────────────────────────────────────
 type BriefTab = "snapshot" | "opportunities" | "strategy" | "pilot";
 
-// ─── Snapshot tab content ─────────────────────────────────────────────────────
+// ─── Snapshot view ────────────────────────────────────────────────────────────
 function GeneratedSnapshot({ brief }: { brief: AccountBrief }) {
   const { account, pilotPlan } = brief;
   const { t } = useLanguage();
@@ -171,64 +224,146 @@ export function GenerateModal() {
   const [company, setCompany] = useState("");
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
   const [situation, setSituation] = useState("");
-  const [provider, setProvider] = useState<Provider>("claude");
-  const [apiKey, setApiKey] = useState("");
+  const [provider] = useState<Provider>("claude"); // Claude only for now
   const [loading, setLoading] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [brief, setBrief] = useState<AccountBrief | null>(null);
   const [activeTab, setActiveTab] = useState<BriefTab>("snapshot");
+  const [quota, setQuota] = useState<{ remaining: number; limit: number } | null>(null);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const [suggestedName, setSuggestedName] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
-  // Mount guard for portal
   useEffect(() => { setMounted(true); }, []);
 
-  // Load persisted preferences
+  // Listen for external "open with brief" events (triggered from saved accounts in sidebar)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const savedProvider = localStorage.getItem("sd_provider") as Provider | null;
-    const savedKey = localStorage.getItem("sd_apikey") ?? "";
-    if (savedProvider) setProvider(savedProvider);
-    if (savedKey) setApiKey(savedKey);
+    const handler = (e: Event) => {
+      const externalBrief = (e as CustomEvent<AccountBrief>).detail;
+      setBrief(externalBrief);
+      setOpen(true);
+      setActiveTab("snapshot");
+      setSavedId(null);
+    };
+    window.addEventListener("sd:open-brief", handler);
+    return () => window.removeEventListener("sd:open-brief", handler);
   }, []);
 
-  const persistPrefs = useCallback((p: Provider, key: string) => {
-    localStorage.setItem("sd_provider", p);
-    if (key) localStorage.setItem("sd_apikey", key);
-  }, []);
+  // Fetch quota whenever modal opens
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/quota")
+      .then((r) => r.json())
+      .then((data: { remaining: number; limit: number }) =>
+        setQuota({ remaining: data.remaining, limit: data.limit })
+      )
+      .catch(() => {});
+  }, [open]);
 
-  const handleGenerate = async () => {
+  const handleValidateAndGenerate = useCallback(async () => {
     if (!company.trim()) {
       setError(lang === "ko" ? "회사명을 입력해 주세요." : "Company name is required.");
       return;
     }
-    if (!apiKey.trim()) {
-      setError(lang === "ko" ? "API 키를 입력해 주세요." : "API key is required.");
-      return;
-    }
-    setLoading(true);
     setError(null);
-    persistPrefs(provider, apiKey);
+    setNeedsConfirm(false);
+    setSuggestedName(null);
 
+    // Step 1: Validate company name
+    setValidating(true);
     try {
-      const res = await fetch("/api/generate", {
+      const res = await fetch("/api/validate-company", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company: company.trim(), industry, situation: situation.trim(), provider, apiKey }),
+        body: JSON.stringify({ company: company.trim(), lang }),
       });
-      const data = (await res.json()) as { brief?: AccountBrief; error?: string };
-      if (!res.ok || data.error) throw new Error(data.error ?? `HTTP ${res.status}`);
-      if (!data.brief) throw new Error("No brief returned from API.");
-      setBrief(data.brief);
-      setActiveTab("snapshot");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : (lang === "ko" ? "생성 실패. API 키를 확인해 주세요." : "Generation failed. Check your API key and try again."));
+      const data = (await res.json()) as {
+        recognized: boolean;
+        normalizedName: string;
+        confidence: "high" | "medium" | "low";
+      };
+
+      if (data.confidence === "low") {
+        setSuggestedName(data.normalizedName || null);
+        setValidating(false);
+        setNeedsConfirm(true);
+        return;
+      }
+
+      // Auto-correct if model returned a cleaner name
+      if (data.normalizedName && data.normalizedName !== company.trim()) {
+        setCompany(data.normalizedName);
+      }
+    } catch {
+      // Validation failed silently — proceed
     } finally {
-      setLoading(false);
+      setValidating(false);
     }
-  };
+
+    await doGenerate(company.trim());
+  }, [company, industry, situation, lang]); // eslint-disable-line
+
+  const doGenerate = useCallback(
+    async (companyName: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            company: companyName,
+            industry,
+            situation: situation.trim(),
+            lang,
+          }),
+        });
+        const data = (await res.json()) as {
+          brief?: AccountBrief;
+          remaining?: number;
+          error?: string;
+        };
+        if (!res.ok || data.error) throw new Error(data.error ?? `HTTP ${res.status}`);
+        if (!data.brief) throw new Error("No brief returned from API.");
+
+        setBrief(data.brief);
+        setActiveTab("snapshot");
+        setSavedId(null);
+        if (data.remaining !== undefined) {
+          setQuota((prev) => (prev ? { ...prev, remaining: data.remaining! } : null));
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : lang === "ko"
+            ? "생성 실패. 잠시 후 다시 시도해 주세요."
+            : "Generation failed. Please try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [industry, situation, lang]
+  );
+
+  const handleConfirmProceed = useCallback(async () => {
+    setNeedsConfirm(false);
+    await doGenerate(company.trim());
+  }, [company, doGenerate]);
+
+  const handleSave = useCallback(() => {
+    if (!brief || savedId) return;
+    const id = persistSavedAccount(brief);
+    setSavedId(id);
+  }, [brief, savedId]);
 
   const handleClose = () => {
     setOpen(false);
     setError(null);
+    setNeedsConfirm(false);
+    setSuggestedName(null);
     if (!brief) {
       setCompany("");
       setSituation("");
@@ -240,23 +375,55 @@ export function GenerateModal() {
     setCompany("");
     setSituation("");
     setError(null);
+    setNeedsConfirm(false);
+    setSuggestedName(null);
+    setSavedId(null);
     setActiveTab("snapshot");
   };
 
-  const briefTabs: { key: BriefTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  const briefTabs: {
+    key: BriefTab;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
     { key: "snapshot",      label: t("nav.snapshot"),      icon: BarChart3 },
     { key: "opportunities", label: t("nav.opportunities"), icon: Target },
     { key: "strategy",      label: t("nav.strategy"),      icon: Compass },
     { key: "pilot",         label: t("nav.pilot"),         icon: BriefcaseBusiness },
   ];
 
+  // ── Quota badge ────────────────────────────────────────────────────────────
+  const QuotaBadge = () => {
+    if (!quota) return (
+      <span className="ml-auto text-xs text-slate-500">{t("gen.tickets.unknown")}</span>
+    );
+    if (quota.remaining === 0) return (
+      <span className="ml-auto rounded-full border border-rose-300/60 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">
+        {t("gen.tickets.zero")}
+      </span>
+    );
+    return (
+      <span className={cn(
+        "ml-auto rounded-full border px-2 py-0.5 text-xs font-semibold",
+        quota.remaining === 1
+          ? "border-amber-300/60 bg-amber-50 text-amber-700"
+          : "border-emerald-300/60 bg-emerald-50 text-emerald-700"
+      )}>
+        {t("gen.tickets", { count: String(quota.remaining) })}
+      </span>
+    );
+  };
+
   const modalContent = open ? (
     <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-slate-950/70 p-4 backdrop-blur-sm lg:p-8">
       <div className="w-full max-w-5xl">
+
         {/* Modal header */}
         <div className="mb-4 flex items-center justify-between">
           <div className="space-y-1">
-            <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-slate-400">{t("gen.label")}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.26em] text-slate-400">
+              {t("gen.label")}
+            </div>
             <h2 className="text-xl font-semibold text-white">
               {brief
                 ? t("gen.title.result", { company: brief.account.company })
@@ -264,6 +431,22 @@ export function GenerateModal() {
             </h2>
           </div>
           <div className="flex items-center gap-2">
+            {brief && !savedId && (
+              <button
+                type="button"
+                onClick={handleSave}
+                className="flex items-center gap-1.5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-400/20"
+              >
+                <Bookmark className="h-3.5 w-3.5" />
+                {t("gen.save")}
+              </button>
+            )}
+            {savedId && (
+              <span className="flex items-center gap-1.5 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-300">
+                <BookmarkCheck className="h-3.5 w-3.5" />
+                {t("gen.saved")}
+              </span>
+            )}
             {brief && (
               <button
                 type="button"
@@ -283,13 +466,57 @@ export function GenerateModal() {
           </div>
         </div>
 
-        {/* Form */}
+        {/* ── Form ── */}
         {!brief && (
           <Card className="border-white/10 bg-slate-900">
+
+            {/* Company confirmation overlay */}
+            {needsConfirm && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-slate-900/95 backdrop-blur-sm">
+                <div className="max-w-md space-y-5 p-8 text-center">
+                  <div className="text-3xl">🤔</div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-white">{t("gen.confirm.title")}</h3>
+                    <p className="text-sm leading-6 text-slate-400">
+                      {t("gen.confirm.body", { company })}
+                    </p>
+                    {suggestedName && (
+                      <p className="text-sm font-semibold text-emerald-400">
+                        {t("gen.confirm.suggest", { name: suggestedName })}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNeedsConfirm(false);
+                        if (suggestedName) setCompany(suggestedName);
+                      }}
+                      className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-300 transition-colors hover:bg-white/10"
+                    >
+                      {t("gen.confirm.edit")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmProceed}
+                      className="flex-1 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100"
+                    >
+                      {t("gen.confirm.proceed")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <CardHeader className="space-y-2">
-              <CardTitle className="text-2xl text-white">{t("gen.form.title")}</CardTitle>
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-2xl text-white">{t("gen.form.title")}</CardTitle>
+                <QuotaBadge />
+              </div>
               <CardDescription className="text-slate-400">{t("gen.form.desc")}</CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-5">
               <div className="grid gap-5 lg:grid-cols-2">
                 {/* Company */}
@@ -301,6 +528,7 @@ export function GenerateModal() {
                     type="text"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !loading && !validating && handleValidateAndGenerate()}
                     placeholder={t("gen.company.placeholder")}
                     className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none focus:ring-0"
                   />
@@ -335,53 +563,33 @@ export function GenerateModal() {
                 />
               </div>
 
-              {/* Provider + API key */}
-              <div className="grid gap-5 lg:grid-cols-[200px_1fr]">
-                {/* Provider toggle */}
-                <div className="space-y-2">
-                  <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">{t("gen.model")}</label>
-                  <div className="flex rounded-xl border border-white/10 bg-white/5 p-1">
-                    <button
-                      type="button"
-                      onClick={() => setProvider("claude")}
-                      className={cn(
-                        "flex-1 rounded-lg py-2 text-xs font-semibold transition-all",
-                        provider === "claude"
-                          ? "bg-white text-slate-950 shadow-sm"
-                          : "text-slate-400 hover:text-white"
-                      )}
-                    >
-                      Claude
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setProvider("openai")}
-                      className={cn(
-                        "flex-1 rounded-lg py-2 text-xs font-semibold transition-all",
-                        provider === "openai"
-                          ? "bg-white text-slate-950 shadow-sm"
-                          : "text-slate-400 hover:text-white"
-                      )}
-                    >
-                      GPT-4o
-                    </button>
-                  </div>
-                </div>
-
-                {/* API key */}
-                <div className="space-y-2">
-                  <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
-                    {provider === "claude" ? "Anthropic" : "OpenAI"} {t("gen.apikey")}{" "}
-                    <span className="text-rose-400">*</span>
-                    <span className="ml-2 text-slate-500">{t("gen.apikey.stored")}</span>
-                  </label>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder={provider === "claude" ? "sk-ant-..." : "sk-..."}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm text-white placeholder:text-slate-500 focus:border-white/30 focus:outline-none"
-                  />
+              {/* Provider toggle */}
+              <div className="space-y-2">
+                <label className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">{t("gen.model")}</label>
+                <div className="flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+                  {PROVIDERS.map(({ key, label, enabled }) => (
+                    <div key={key} className="relative flex-1" title={!enabled ? t("gen.model.coming_soon") : undefined}>
+                      <button
+                        type="button"
+                        disabled={!enabled}
+                        className={cn(
+                          "w-full rounded-lg py-2 text-xs font-semibold transition-all",
+                          key === provider && enabled
+                            ? "bg-white text-slate-950 shadow-sm"
+                            : enabled
+                            ? "text-slate-400 hover:text-white"
+                            : "cursor-not-allowed text-slate-600 opacity-50"
+                        )}
+                      >
+                        {label}
+                        {!enabled && (
+                          <span className="ml-1 rounded-full border border-slate-700 px-1 py-px text-[9px] font-normal text-slate-500">
+                            {t("gen.model.coming_soon")}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -392,14 +600,19 @@ export function GenerateModal() {
                 </div>
               )}
 
-              {/* Generate button — always enabled, validates on click */}
+              {/* Generate button */}
               <Button
                 type="button"
-                onClick={handleGenerate}
-                disabled={loading}
+                onClick={handleValidateAndGenerate}
+                disabled={loading || validating || (quota !== null && quota.remaining === 0)}
                 className="w-full gap-2 bg-white text-slate-950 hover:bg-slate-100 disabled:opacity-40"
               >
-                {loading ? (
+                {validating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("gen.validating")}
+                  </>
+                ) : loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
                     {t("gen.loading")}
@@ -412,9 +625,7 @@ export function GenerateModal() {
                 )}
               </Button>
 
-              <p className="text-center text-xs text-slate-500">
-                {t("gen.privacy", { provider: provider === "claude" ? "Anthropic" : "OpenAI" })}
-              </p>
+              <p className="text-center text-xs text-slate-500">{t("gen.footer")}</p>
             </CardContent>
           </Card>
         )}
@@ -467,7 +678,7 @@ export function GenerateModal() {
         {t("gen.title")}
       </button>
 
-      {/* Modal rendered via portal at document.body to avoid stacking context issues */}
+      {/* Modal rendered via portal to avoid sidebar stacking context */}
       {mounted && createPortal(modalContent, document.body)}
     </>
   );

@@ -1,5 +1,7 @@
 .next
 node_modules
+.env.local
+.env*.local
 out
 dist
 npm-debug.log*

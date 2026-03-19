@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
+import { getQuota, consumeQuota } from "@/lib/rate-limit";
+
+// ─── Language name map ────────────────────────────────────────────────────────
+// Extensible: add more codes here to support future languages
+const LANG_NAMES: Record<string, string> = {
+  en: "English",
+  ko: "Korean",
+  ja: "Japanese",
+  zh: "Chinese (Simplified)",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  vi: "Vietnamese",
+  th: "Thai",
+};
 
 // ─── System prompt ────────────────────────────────────────────────────────────
-// Encodes MEDDPICC, Value Selling, and Challenger Sale frameworks
-const SYSTEM_PROMPT = `You are a senior enterprise AI sales strategist with 15 years of experience closing complex B2B deals. You write account briefs that a VP of Sales would forward to their CEO without editing. Every word must sound like a senior AE who knows this account, not a consultant summarizing a Wikipedia page.
+function buildSystemPrompt(lang: string): string {
+  const langName = LANG_NAMES[lang] ?? "English";
+
+  return `You are a senior enterprise AI sales strategist with 15 years of experience closing complex B2B deals. You write account briefs that a VP of Sales would forward to their CEO without editing. Every word must sound like a senior AE who knows this account, not a consultant summarizing a Wikipedia page.
 
 You follow three frameworks simultaneously:
 - MEDDPICC (Metrics, Economic Buyer, Decision Criteria, Decision Process, Identify Pain, Champion, Competition) — every section of the brief must satisfy at least one MEDDPICC element.
@@ -19,6 +35,8 @@ CRITICAL copy standards:
 - No generic AI transformation language. No "leverage cutting-edge AI." Write like someone who has sat in the room with this customer.
 - Korean won figures where appropriate for Korean companies (format: ₩XB or ₩XT)
 - Stakeholder names must sound realistic for Korean companies (Korean names for Korean companies, western names for others)
+
+LANGUAGE REQUIREMENT: Generate ALL text content (titles, descriptions, pain points, stakeholder notes, emails, summaries — everything) in ${langName}. Company names, technical acronyms (e.g. MEDDPICC, ROI, KPI), and currency symbols may remain in their original form. Do not mix languages.
 
 OUTPUT FORMAT: Return ONLY a valid JSON object matching this exact TypeScript type. No markdown, no explanation, no code block wrapper — just the raw JSON.
 
@@ -99,23 +117,46 @@ interface AccountBrief {
     };
   };
 }`;
+}
 
 // ─── Request body type ─────────────────────────────────────────────────────────
 interface GenerateRequest {
   company: string;
   industry: string;
   situation: string;
-  provider: "claude" | "openai";
-  apiKey: string;
+  lang?: string;
 }
 
 export async function POST(request: NextRequest) {
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "127.0.0.1";
+
+  const quota = getQuota(ip);
+  if (!quota.allowed) {
+    return NextResponse.json(
+      { error: "Daily generation limit reached. Try again tomorrow.", remaining: 0 },
+      { status: 429 }
+    );
+  }
+
+  // ── API key ────────────────────────────────────────────────────────────────
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey || apiKey.startsWith("sk-ant-api03-replace")) {
+    return NextResponse.json(
+      { error: "Server API key not configured. Set ANTHROPIC_API_KEY in .env.local." },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = (await request.json()) as GenerateRequest;
-    const { company, industry, situation, provider, apiKey } = body;
+    const { company, industry, situation, lang = "en" } = body;
 
-    if (!company || !industry || !apiKey) {
-      return NextResponse.json({ error: "Missing required fields: company, industry, apiKey" }, { status: 400 });
+    if (!company || !industry) {
+      return NextResponse.json({ error: "Missing required fields: company, industry" }, { status: 400 });
     }
 
     const userPrompt = `Generate a complete AccountBrief JSON for the following account.
@@ -126,41 +167,30 @@ Situation: ${situation || `${company} is a company in the ${industry} industry. 
 
 Return ONLY the raw JSON object. No markdown formatting, no code blocks, no explanation.`;
 
-    let jsonText: string;
+    const client = new Anthropic({ apiKey });
+    const message = await client.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 8000,
+      system: buildSystemPrompt(lang),
+      messages: [{ role: "user", content: userPrompt }],
+    });
 
-    if (provider === "claude") {
-      const client = new Anthropic({ apiKey });
-      const message = await client.messages.create({
-        model: "claude-sonnet-4-6",
-        max_tokens: 8000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: userPrompt }],
-      });
-      const content = message.content[0];
-      if (content.type !== "text") throw new Error("Unexpected response type from Claude");
-      jsonText = content.text;
-    } else {
-      const client = new OpenAI({ apiKey });
-      const completion = await client.chat.completions.create({
-        model: "gpt-4o",
-        max_tokens: 8000,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-      jsonText = completion.choices[0]?.message?.content ?? "";
-    }
+    const content = message.content[0];
+    if (content.type !== "text") throw new Error("Unexpected response type from Claude");
 
     // Strip markdown code fences if model wrapped the output
-    const cleaned = jsonText
+    const cleaned = content.text
       .replace(/^```(?:json)?\n?/i, "")
       .replace(/\n?```$/i, "")
       .trim();
 
     const brief = JSON.parse(cleaned);
-    return NextResponse.json({ brief });
+
+    // Consume quota only on success
+    consumeQuota(ip);
+    const updatedQuota = getQuota(ip);
+
+    return NextResponse.json({ brief, remaining: updatedQuota.remaining });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[/api/generate]", message);
