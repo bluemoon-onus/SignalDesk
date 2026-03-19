@@ -168,6 +168,19 @@ export const dict: Dict = {
   "strategy.talk_track": { en: "Talk track", ko: "대화 스크립트" },
   "strategy.influence": { en: "Influence:", ko: "영향력:" },
 
+  // ── Stakeholder enum labels ───────────────────────────────────────────────
+  "stakeholder.role.economic_buyer":         { en: "Economic Buyer",         ko: "경제적 구매자" },
+  "stakeholder.role.champion":               { en: "Champion",               ko: "챔피언" },
+  "stakeholder.role.technical_evaluator":    { en: "Technical Evaluator",    ko: "기술 평가자" },
+  "stakeholder.role.blocker":                { en: "Blocker",                ko: "저항자" },
+  "stakeholder.role.operational_influencer": { en: "Operational Influencer", ko: "운영 영향자" },
+  "stakeholder.stance.supportive":           { en: "Supportive",             ko: "우호적" },
+  "stakeholder.stance.neutral":              { en: "Neutral",                ko: "중립" },
+  "stakeholder.stance.resistant":            { en: "Resistant",              ko: "저항적" },
+  "stakeholder.influence.high":              { en: "HIGH",                   ko: "높음" },
+  "stakeholder.influence.medium":            { en: "MEDIUM",                 ko: "중간" },
+  "stakeholder.influence.low":               { en: "LOW",                    ko: "낮음" },
+
   // ── Pilot ────────────────────────────────────────────────────────────────
   "pilot.label": { en: "Pilot and ROI brief", ko: "파일럿 & ROI 브리프" },
   "pilot.title": {

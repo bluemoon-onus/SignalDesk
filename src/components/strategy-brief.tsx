@@ -25,23 +25,41 @@ function StakeholderCard({ stakeholder }: { stakeholder: Stakeholder }) {
   const { t } = useLanguage();
   const Icon = roleIcons[stakeholder.role as StakeholderRole] ?? Building2;
 
+  const roleLabels: Record<string, string> = {
+    "Economic Buyer":         t("stakeholder.role.economic_buyer"),
+    "Champion":               t("stakeholder.role.champion"),
+    "Technical Evaluator":    t("stakeholder.role.technical_evaluator"),
+    "Blocker":                t("stakeholder.role.blocker"),
+    "Operational Influencer": t("stakeholder.role.operational_influencer"),
+  };
+  const stanceLabels: Record<string, string> = {
+    Supportive: t("stakeholder.stance.supportive"),
+    Neutral:    t("stakeholder.stance.neutral"),
+    Resistant:  t("stakeholder.stance.resistant"),
+  };
+  const influenceLabels: Record<string, string> = {
+    High:   t("stakeholder.influence.high"),
+    Medium: t("stakeholder.influence.medium"),
+    Low:    t("stakeholder.influence.low"),
+  };
+
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white/95 p-5 shadow-sm shadow-slate-200/60">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             <Icon className="h-4 w-4 text-slate-700" />
-            {stakeholder.role}
+            {roleLabels[stakeholder.role] ?? stakeholder.role}
           </div>
           <div className="text-xl font-semibold text-slate-950">{stakeholder.name}</div>
           <div className="text-sm text-slate-600">{stakeholder.title}</div>
         </div>
         <div className="space-y-2 text-right">
           <span className={cn("inline-flex rounded-full border px-3 py-1 text-xs font-semibold", stanceStyles[stakeholder.stance])}>
-            {stakeholder.stance}
+            {stanceLabels[stakeholder.stance] ?? stakeholder.stance}
           </span>
           <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            {t("strategy.influence")} {stakeholder.influence}
+            {t("strategy.influence")} {influenceLabels[stakeholder.influence] ?? stakeholder.influence}
           </div>
         </div>
       </div>
