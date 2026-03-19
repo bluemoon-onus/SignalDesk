@@ -1,5 +1,6 @@
 import type { AccountBrief } from "@/types";
 import { koData, type AccountI18n } from "@/data/i18n/ko";
+export type { AccountI18n };
 
 export type Lang = string;
 
@@ -68,6 +69,47 @@ function applyKoTranslation(brief: AccountBrief, t: AccountI18n): AccountBrief {
             t.stakeholders![i]?.recommendedApproach ?? s.recommendedApproach,
         }))
       : brief.stakeholders,
+    dealStrategy: t.dealStrategy
+      ? {
+          ...brief.dealStrategy,
+          positioning: t.dealStrategy.positioning ?? brief.dealStrategy.positioning,
+          objections: t.dealStrategy.objections
+            ? brief.dealStrategy.objections.map((o, i) => ({
+                ...o,
+                objection: t.dealStrategy!.objections![i]?.objection ?? o.objection,
+                response:  t.dealStrategy!.objections![i]?.response  ?? o.response,
+              }))
+            : brief.dealStrategy.objections,
+          agenda: t.dealStrategy.agenda
+            ? brief.dealStrategy.agenda.map((a, i) => ({
+                ...a,
+                topic:   t.dealStrategy!.agenda![i]?.topic   ?? a.topic,
+                outcome: t.dealStrategy!.agenda![i]?.outcome ?? a.outcome,
+              }))
+            : brief.dealStrategy.agenda,
+        }
+      : brief.dealStrategy,
+    pilotPlan: t.pilotPlan
+      ? {
+          ...brief.pilotPlan,
+          scope: t.pilotPlan.scope ?? brief.pilotPlan.scope,
+          phases: t.pilotPlan.phases
+            ? brief.pilotPlan.phases.map((ph, i) => ({
+                ...ph,
+                name:         t.pilotPlan!.phases![i]?.name         ?? ph.name,
+                objective:    t.pilotPlan!.phases![i]?.objective    ?? ph.objective,
+                deliverables: t.pilotPlan!.phases![i]?.deliverables ?? ph.deliverables,
+              }))
+            : brief.pilotPlan.phases,
+          roi: t.pilotPlan.roi
+            ? { ...brief.pilotPlan.roi, ...t.pilotPlan.roi }
+            : brief.pilotPlan.roi,
+          executiveSummary: t.pilotPlan.executiveSummary ?? brief.pilotPlan.executiveSummary,
+          followUpEmail: t.pilotPlan.followUpEmail
+            ? { ...brief.pilotPlan.followUpEmail, ...t.pilotPlan.followUpEmail }
+            : brief.pilotPlan.followUpEmail,
+        }
+      : brief.pilotPlan,
   };
 }
 

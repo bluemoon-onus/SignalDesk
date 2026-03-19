@@ -170,7 +170,7 @@ Return ONLY the raw JSON object. No markdown formatting, no code blocks, no expl
     const client = new Anthropic({ apiKey });
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 8000,
+      max_tokens: 16000,
       system: buildSystemPrompt(lang),
       messages: [{ role: "user", content: userPrompt }],
     });
@@ -184,7 +184,14 @@ Return ONLY the raw JSON object. No markdown formatting, no code blocks, no expl
       .replace(/\n?```$/i, "")
       .trim();
 
-    const brief = JSON.parse(cleaned);
+    let brief;
+    try {
+      brief = JSON.parse(cleaned);
+    } catch (parseErr) {
+      const pos = cleaned.length;
+      const hint = pos > 7500 ? " (response may have been truncated — retrying with a shorter prompt may help)" : "";
+      throw new Error(`Invalid JSON from model${hint}: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`);
+    }
 
     // Consume quota only on success
     consumeQuota(ip);

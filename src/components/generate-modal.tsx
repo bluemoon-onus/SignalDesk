@@ -46,12 +46,46 @@ export function GenerateModal() {
   const [provider]                = useState<Provider>("claude");
   const [loading, setLoading]     = useState(false);
   const [validating, setValidating] = useState(false);
+  const [progressIdx, setProgressIdx] = useState(0);
   const [error, setError]         = useState<string | null>(null);
   const [quota, setQuota]         = useState<{ remaining: number; limit: number } | null>(null);
   const [needsConfirm, setNeedsConfirm] = useState(false);
   const [suggestedName, setSuggestedName] = useState<string | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
+
+  // Progress step cycling during generation
+  const progressSteps = lang === "ko"
+    ? [
+        "회사 정보 조사 중...",
+        "페인 포인트 분석 중...",
+        "이해관계자 맵 구성 중...",
+        "반론 및 대응 전략 작성 중...",
+        "미팅 어젠다 설계 중...",
+        "파일럿 플랜 수립 중...",
+        "ROI 모델 산출 중...",
+        "임원 요약 및 후속 이메일 작성 중...",
+        "브리프 최종 검토 중...",
+      ]
+    : [
+        "Researching company profile...",
+        "Identifying pain points...",
+        "Building stakeholder map...",
+        "Drafting objection responses...",
+        "Designing meeting agenda...",
+        "Structuring pilot plan...",
+        "Calculating ROI model...",
+        "Writing executive summary & email...",
+        "Finalizing brief...",
+      ];
+
+  useEffect(() => {
+    if (!loading) { setProgressIdx(0); return; }
+    const interval = setInterval(() => {
+      setProgressIdx((prev) => (prev + 1) % progressSteps.length);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [loading, progressSteps.length]);
 
   // Fetch quota when modal opens
   useEffect(() => {
@@ -342,6 +376,21 @@ export function GenerateModal() {
                 <><Sparkles className="h-4 w-4" />{t("gen.submit")}</>
               )}
             </Button>
+
+            {/* Real-time progress steps shown while generating */}
+            {loading && (
+              <div className="space-y-3">
+                <div className="h-0.5 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-emerald-400/60 transition-all duration-[3200ms] ease-linear"
+                    style={{ width: `${((progressIdx + 1) / progressSteps.length) * 100}%` }}
+                  />
+                </div>
+                <p className="text-center text-xs text-slate-400 transition-opacity duration-500">
+                  {progressSteps[progressIdx]}
+                </p>
+              </div>
+            )}
 
             <p className="text-center text-xs text-slate-500">{t("gen.footer")}</p>
           </CardContent>
