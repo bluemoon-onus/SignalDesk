@@ -322,7 +322,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
         <div className="flex min-h-[calc(100vh-2rem)] flex-1 flex-col gap-4">
 
           {/* Top bar */}
-          <Card className="border-white/70 bg-white/80 shadow-panel">
+          <Card className="border-white/70 bg-white/80 shadow-panel overflow-visible">
             <div className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-slate-400">
@@ -359,7 +359,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
                     <ChevronDown className={cn("h-3 w-3 text-slate-400 transition-transform", langOpen && "rotate-180")} />
                   </button>
                   {langOpen && (
-                    <div className="absolute right-0 top-full z-50 mt-1.5 min-w-[130px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60">
+                    <div className="absolute right-0 top-full z-[9999] mt-1.5 min-w-[140px] rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
                       {SUPPORTED_LANGS.map(({ code, nativeLabel }) => (
                         <button
                           key={code}
