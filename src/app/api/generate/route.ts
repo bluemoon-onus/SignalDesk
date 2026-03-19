@@ -131,7 +131,7 @@ Return ONLY the raw JSON object. No markdown formatting, no code blocks, no expl
     if (provider === "claude") {
       const client = new Anthropic({ apiKey });
       const message = await client.messages.create({
-        model: "claude-opus-4-5",
+        model: "claude-sonnet-4-6",
         max_tokens: 8000,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: userPrompt }],
