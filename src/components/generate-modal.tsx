@@ -114,8 +114,21 @@ export function GenerateModal() {
         if (!res.ok || data.error) throw new Error(data.error ?? `HTTP ${res.status}`);
         if (!data.brief) throw new Error("No brief returned from API.");
 
-        // Auto-save and navigate to the full page layout
+        // Auto-save locally and persist to server-side KV
+        const savedAt = Date.now();
         const genId = saveBrief(data.brief);
+        fetch("/api/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: genId,
+            company: data.brief.account.company,
+            industry: data.brief.account.industry,
+            savedAt,
+            brief: data.brief,
+          }),
+        }).catch(() => {});
+
         if (data.remaining !== undefined) {
           setQuota((prev) => prev ? { ...prev, remaining: data.remaining! } : null);
         }

@@ -114,12 +114,28 @@ export function AppShell({ accountId, children }: AppShellProps) {
     : accountList[0]);
   const currentColor = getIndustryColor(currentAccount.industry);
 
-  // ── Load generated accounts from localStorage ─────────────────────────────
+  // ── Load generated accounts (localStorage + KV) ───────────────────────────
   const refreshSaved = useCallback(() => { setSavedAccounts(loadSavedAccounts()); }, []);
 
   useEffect(() => {
     setMounted(true);
-    refreshSaved();
+    refreshSaved(); // immediate local load
+
+    // Sync with server-side KV in background
+    fetch("/api/accounts")
+      .then((r) => r.json())
+      .then((data: { accounts: SavedAccount[] }) => {
+        if (!Array.isArray(data.accounts) || data.accounts.length === 0) return;
+        const local = loadSavedAccounts();
+        const localIds = new Set(local.map((a) => a.id));
+        const toAdd = data.accounts.filter((a) => !localIds.has(a.id));
+        if (toAdd.length === 0) return;
+        const merged = [...local, ...toAdd];
+        localStorage.setItem("sd_saved_accounts", JSON.stringify(merged));
+        setSavedAccounts(merged);
+      })
+      .catch(() => {});
+
     window.addEventListener("sd:accounts-updated", refreshSaved);
     return () => window.removeEventListener("sd:accounts-updated", refreshSaved);
   }, [refreshSaved]);
@@ -136,6 +152,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
   const handleDeleteSaved = useCallback(
     (id: string) => {
       deleteSavedAccount(id);
+      fetch(`/api/accounts?id=${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => {});
       if (id === accountId) router.push(`/${accountList[0].id}/snapshot`);
     },
     [accountId, router]
