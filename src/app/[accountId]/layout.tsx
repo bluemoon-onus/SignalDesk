@@ -11,9 +11,13 @@ type AccountLayoutProps = {
 
 export default async function AccountLayout({ children, params }: AccountLayoutProps) {
   const { accountId } = await params;
-  const brief = getAccount(accountId);
 
-  if (!brief) {
+  // Generated accounts (gen-*) live in localStorage — resolved client-side.
+  // Static accounts must exist in the registry.
+  const isGenerated = accountId.startsWith("gen-");
+  const brief = isGenerated ? null : getAccount(accountId);
+
+  if (!isGenerated && !brief) {
     notFound();
   }
 

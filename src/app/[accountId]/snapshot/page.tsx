@@ -1,21 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { notFound } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAccount } from "@/data";
+import { getBrief } from "@/lib/brief-store";
 import { useLanguage } from "@/contexts/language-context";
+import type { AccountBrief } from "@/types";
 
 export default function SnapshotPage() {
   const params = useParams();
   const accountId = params.accountId as string;
-  const brief = getAccount(accountId);
   const { t } = useLanguage();
 
-  if (!brief) notFound();
+  // Support both static (sync) and generated (async from localStorage) briefs
+  const [brief, setBrief] = useState<AccountBrief | null>(() => getBrief(accountId) ?? null);
 
-  const { account, pilotPlan } = brief;
+  useEffect(() => {
+    const b = getBrief(accountId);
+    if (b) setBrief(b);
+  }, [accountId]);
 
   const severityStyles = {
     High: { badge: "border-rose-200 bg-rose-50 text-rose-700",   dot: "bg-rose-500" },
@@ -23,6 +27,15 @@ export default function SnapshotPage() {
     Low:  { badge: "border-sky-200 bg-sky-50 text-sky-700",       dot: "bg-sky-500" },
   } as const;
 
+  if (!brief) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-sm text-slate-400">{t("gen.loading")}</p>
+      </div>
+    );
+  }
+
+  const { account, pilotPlan } = brief;
   const severityLabel = { High: t("severity.high"), Med: t("severity.med"), Low: t("severity.low") };
 
   return (

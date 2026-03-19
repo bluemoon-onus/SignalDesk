@@ -1,15 +1,32 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 import { StrategyBrief } from "@/components/strategy-brief";
-import { getAccount } from "@/data";
+import { getBrief } from "@/lib/brief-store";
+import { useLanguage } from "@/contexts/language-context";
+import type { AccountBrief } from "@/types";
 
-type Props = { params: Promise<{ accountId: string }> };
+export default function StrategyPage() {
+  const params = useParams();
+  const accountId = params.accountId as string;
+  const { t } = useLanguage();
 
-export default async function StrategyPage({ params }: Props) {
-  const { accountId } = await params;
-  const brief = getAccount(accountId);
+  const [brief, setBrief] = useState<AccountBrief | null>(() => getBrief(accountId) ?? null);
 
-  if (!brief) notFound();
+  useEffect(() => {
+    const b = getBrief(accountId);
+    if (b) setBrief(b);
+  }, [accountId]);
+
+  if (!brief) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-sm text-slate-400">{t("gen.loading")}</p>
+      </div>
+    );
+  }
 
   return <StrategyBrief brief={brief} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -19,7 +19,8 @@ import { accountList, getAccount } from "@/data";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
 import { SUPPORTED_LANGS } from "@/lib/i18n";
-import { GenerateModal, loadSavedAccounts, type SavedAccount } from "./generate-modal";
+import { loadSavedAccounts, deleteSavedAccount, type SavedAccount } from "@/lib/brief-store";
+import { GenerateModal } from "./generate-modal";
 
 // ─── Industry color palette ───────────────────────────────────────────────────
 type IndustryColor = { dot: string; badge: string; activeDot: string };
@@ -78,31 +79,38 @@ const navKeys = ["snapshot", "opportunities", "strategy", "pilot"] as const;
 type NavKey = (typeof navKeys)[number];
 
 const navIcons: Record<NavKey, React.ComponentType<{ className?: string }>> = {
-  snapshot: BarChart3,
+  snapshot:      BarChart3,
   opportunities: Target,
-  strategy: Compass,
-  pilot: BriefcaseBusiness,
+  strategy:      Compass,
+  pilot:         BriefcaseBusiness,
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 type AppShellProps = { accountId: string; children: React.ReactNode };
 
 export function AppShell({ accountId, children }: AppShellProps) {
-  const pathname = usePathname();
+  const pathname  = usePathname();
+  const router    = useRouter();
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
-  const [adminMode, setAdminMode] = useState(false);
+  const [langOpen, setLangOpen]         = useState(false);
+  const [adminMode, setAdminMode]       = useState(false);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const { lang, setLang, t } = useLanguage();
 
-  const currentBrief = getAccount(accountId);
-  const currentAccount = accountList.find((a) => a.id === accountId) ?? accountList[0];
+  // ── Resolve current account ───────────────────────────────────────────────
+  const isGenerated  = accountId.startsWith("gen-");
+  const staticBrief  = isGenerated ? null : getAccount(accountId);
+  const currentSaved = savedAccounts.find((a) => a.id === accountId);
+  const currentBrief = staticBrief ?? currentSaved?.brief ?? null;
+
+  const staticMeta     = accountList.find((a) => a.id === accountId);
+  const currentAccount = staticMeta ?? (currentSaved
+    ? { id: currentSaved.id, company: currentSaved.company, industry: currentSaved.industry }
+    : accountList[0]);
   const currentColor = getIndustryColor(currentAccount.industry);
 
-  // Load saved accounts from localStorage
-  const refreshSaved = useCallback(() => {
-    setSavedAccounts(loadSavedAccounts());
-  }, []);
+  // ── Load generated accounts from localStorage ─────────────────────────────
+  const refreshSaved = useCallback(() => { setSavedAccounts(loadSavedAccounts()); }, []);
 
   useEffect(() => {
     refreshSaved();
@@ -110,16 +118,22 @@ export function AppShell({ accountId, children }: AppShellProps) {
     return () => window.removeEventListener("sd:accounts-updated", refreshSaved);
   }, [refreshSaved]);
 
-  const handleDeleteSaved = useCallback((id: string) => {
-    const updated = loadSavedAccounts().filter((a) => a.id !== id);
-    localStorage.setItem("sd_saved_accounts", JSON.stringify(updated));
-    window.dispatchEvent(new Event("sd:accounts-updated"));
-  }, []);
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleOpenSaved = useCallback(
+    (saved: SavedAccount) => {
+      setSwitcherOpen(false);
+      router.push(`/${saved.id}/snapshot`);
+    },
+    [router]
+  );
 
-  const handleOpenSaved = useCallback((saved: SavedAccount) => {
-    setSwitcherOpen(false);
-    window.dispatchEvent(new CustomEvent("sd:open-brief", { detail: saved.brief }));
-  }, []);
+  const handleDeleteSaved = useCallback(
+    (id: string) => {
+      deleteSavedAccount(id);
+      if (id === accountId) router.push(`/${accountList[0].id}/snapshot`);
+    },
+    [accountId, router]
+  );
 
   return (
     <div className="min-h-screen bg-background bg-mesh-grid text-foreground">
@@ -164,7 +178,6 @@ export function AppShell({ accountId, children }: AppShellProps) {
                 <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
                   <div className="max-h-[480px] overflow-y-auto py-1">
 
-                    {/* Static accounts */}
                     {Array.from(accountGroups.entries()).map(([industry, accounts], groupIndex) => {
                       const color = getIndustryColor(industry);
                       return (
@@ -212,21 +225,23 @@ export function AppShell({ accountId, children }: AppShellProps) {
                           )}
                         </div>
                         {savedAccounts.map((saved) => {
-                          const color = getIndustryColor(saved.industry);
+                          const color    = getIndustryColor(saved.industry);
+                          const isActive = saved.id === accountId;
                           return (
-                            <div
-                              key={saved.id}
-                              className="group flex items-center justify-between px-4 py-2.5 hover:bg-slate-50"
-                            >
+                            <div key={saved.id} className="group flex items-center justify-between px-4 py-2.5 hover:bg-slate-50">
                               <button
                                 type="button"
                                 onClick={() => handleOpenSaved(saved)}
                                 className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm"
                               >
                                 <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", color.dot)} />
-                                <span className="truncate font-medium text-slate-700 group-hover:text-slate-950">
+                                <span className={cn(
+                                  "truncate",
+                                  isActive ? "font-semibold text-slate-950" : "font-medium text-slate-700 group-hover:text-slate-950"
+                                )}>
                                   {saved.company}
                                 </span>
+                                {isActive && <span className={cn("ml-1 h-2 w-2 shrink-0 rounded-full", color.activeDot)} />}
                               </button>
                               {adminMode && (
                                 <button
@@ -251,10 +266,9 @@ export function AppShell({ accountId, children }: AppShellProps) {
             {/* Navigation */}
             <nav className="space-y-1.5">
               {navKeys.map((key) => {
-                const href = `/${accountId}/${key}`;
+                const href     = `/${accountId}/${key}`;
                 const isActive = pathname === href;
-                const Icon = navIcons[key];
-
+                const Icon     = navIcons[key];
                 return (
                   <Link
                     key={key}
@@ -274,10 +288,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
                     </div>
                     <div className="space-y-0.5">
                       <div className="font-semibold leading-tight">{t(`nav.${key}`)}</div>
-                      <div className={cn(
-                        "text-xs leading-4",
-                        isActive ? "text-slate-300" : "text-slate-400 group-hover:text-slate-500"
-                      )}>
+                      <div className={cn("text-xs leading-4", isActive ? "text-slate-300" : "text-slate-400 group-hover:text-slate-500")}>
                         {t(`nav.${key}.desc`)}
                       </div>
                     </div>
@@ -290,8 +301,6 @@ export function AppShell({ accountId, children }: AppShellProps) {
           {/* Sidebar footer */}
           <div className="space-y-3 border-t border-slate-100 px-6 py-4">
             <GenerateModal />
-
-            {/* Admin + footer note row */}
             <div className="flex items-center gap-2">
               <p className="flex-1 text-xs leading-5 text-slate-400">{t("shell.footer_note")}</p>
               <button
@@ -300,9 +309,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
                 title={adminMode ? t("shell.exit_admin") : t("shell.admin_mode")}
                 className={cn(
                   "shrink-0 rounded-lg p-1.5 transition-colors",
-                  adminMode
-                    ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
-                    : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  adminMode ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                 )}
               >
                 <Settings className="h-3.5 w-3.5" />
@@ -335,7 +342,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
                 <div className="flex items-center gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-4 py-2.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   <span className="text-sm font-semibold text-emerald-800">
-                    {currentBrief?.pilotPlan.roi.projectedValue ?? "ROI in brief"}
+                    {currentBrief?.pilotPlan.roi.projectedValue ?? "—"}
                   </span>
                   <span className="text-xs text-emerald-600">{t("shell.year1_value")}</span>
                 </div>
@@ -352,7 +359,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
                     <ChevronDown className={cn("h-3 w-3 text-slate-400 transition-transform", langOpen && "rotate-180")} />
                   </button>
                   {langOpen && (
-                    <div className="absolute right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60">
+                    <div className="absolute right-0 top-full z-50 mt-1.5 min-w-[130px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/60">
                       {SUPPORTED_LANGS.map(({ code, nativeLabel }) => (
                         <button
                           key={code}
