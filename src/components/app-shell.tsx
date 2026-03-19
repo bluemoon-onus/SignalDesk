@@ -12,7 +12,8 @@ import {
   Target,
   Trash2,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 
 import { Card } from "@/components/ui/card";
 import { accountList, getAccount } from "@/data";
@@ -91,9 +92,12 @@ type AppShellProps = { accountId: string; children: React.ReactNode };
 export function AppShell({ accountId, children }: AppShellProps) {
   const pathname  = usePathname();
   const router    = useRouter();
-  const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [langOpen, setLangOpen]         = useState(false);
-  const [adminMode, setAdminMode]       = useState(false);
+  const [switcherOpen, setSwitcherOpen]   = useState(false);
+  const [langOpen, setLangOpen]           = useState(false);
+  const [langPos, setLangPos]             = useState<{ top: number; right: number } | null>(null);
+  const [mounted, setMounted]             = useState(false);
+  const [adminMode, setAdminMode]         = useState(false);
+  const langBtnRef = useRef<HTMLButtonElement>(null);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const { lang, setLang, t } = useLanguage();
 
@@ -113,6 +117,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
   const refreshSaved = useCallback(() => { setSavedAccounts(loadSavedAccounts()); }, []);
 
   useEffect(() => {
+    setMounted(true);
     refreshSaved();
     window.addEventListener("sd:accounts-updated", refreshSaved);
     return () => window.removeEventListener("sd:accounts-updated", refreshSaved);
@@ -347,34 +352,62 @@ export function AppShell({ accountId, children }: AppShellProps) {
                   <span className="text-xs text-emerald-600">{t("shell.year1_value")}</span>
                 </div>
 
-                {/* Language toggle */}
-                <div className="relative">
+                {/* Language toggle — portal-rendered to escape all overflow/stacking constraints */}
+                <div>
                   <button
+                    ref={langBtnRef}
                     type="button"
-                    onClick={() => setLangOpen((prev) => !prev)}
+                    onClick={() => {
+                      if (langOpen) {
+                        setLangOpen(false);
+                        setLangPos(null);
+                      } else {
+                        const rect = langBtnRef.current?.getBoundingClientRect();
+                        if (rect) {
+                          setLangPos({
+                            top: rect.bottom + 6,
+                            right: window.innerWidth - rect.right,
+                          });
+                        }
+                        setLangOpen(true);
+                      }
+                    }}
                     className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50"
                   >
                     <Globe className="h-3.5 w-3.5 text-slate-400" />
                     {lang.toUpperCase()}
                     <ChevronDown className={cn("h-3 w-3 text-slate-400 transition-transform", langOpen && "rotate-180")} />
                   </button>
-                  {langOpen && (
-                    <div className="absolute right-0 top-full z-[9999] mt-1.5 min-w-[140px] rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
-                      {SUPPORTED_LANGS.map(({ code, nativeLabel }) => (
-                        <button
-                          key={code}
-                          type="button"
-                          onClick={() => { setLang(code); setLangOpen(false); }}
-                          className={cn(
-                            "flex w-full items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-slate-50",
-                            lang === code ? "font-semibold text-slate-950" : "text-slate-600"
-                          )}
-                        >
-                          {lang === code && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
-                          {nativeLabel}
-                        </button>
-                      ))}
-                    </div>
+
+                  {/* Dropdown via portal — guaranteed visible on all devices */}
+                  {mounted && langOpen && langPos && createPortal(
+                    <>
+                      {/* Invisible backdrop to close on outside click */}
+                      <div
+                        className="fixed inset-0 z-[9998]"
+                        onClick={() => { setLangOpen(false); setLangPos(null); }}
+                      />
+                      <div
+                        className="fixed z-[9999] min-w-[148px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60"
+                        style={{ top: langPos.top, right: langPos.right }}
+                      >
+                        {SUPPORTED_LANGS.map(({ code, nativeLabel }) => (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => { setLang(code); setLangOpen(false); setLangPos(null); }}
+                            className={cn(
+                              "flex w-full items-center gap-2 px-4 py-2.5 text-sm transition-colors hover:bg-slate-50",
+                              lang === code ? "font-semibold text-slate-950" : "text-slate-600"
+                            )}
+                          >
+                            {lang === code && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                            {nativeLabel}
+                          </button>
+                        ))}
+                      </div>
+                    </>,
+                    document.body
                   )}
                 </div>
               </div>
