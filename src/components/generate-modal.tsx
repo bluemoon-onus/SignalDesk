@@ -57,6 +57,7 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
   useEffect(() => { setMounted(true); }, []);
 
   // Progress step cycling during generation
+  // Last 3 steps = "Finalizing" phase split into 80 / 90 / 99%
   const progressSteps = lang === "ko"
     ? [
         "회사 정보 조사 중...",
@@ -66,7 +67,9 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
         "파일럿 플랜 수립 중...",
         "ROI 모델 산출 중...",
         "임원 요약 작성 중...",
-        "브리프 최종 검토 중...",
+        "브리프 구조 검토 중...",       // 80%
+        "품질 및 일관성 검증 중...",    // 90%
+        "최종 브리프 완성 중...",       // 99%
       ]
     : [
         "Researching company profile...",
@@ -76,8 +79,13 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
         "Structuring pilot plan...",
         "Calculating ROI model...",
         "Writing executive summary...",
-        "Finalizing brief...",
+        "Reviewing brief structure...",   // 80%
+        "Validating quality checks...",   // 90%
+        "Finalizing brief...",            // 99%
       ];
+
+  // Fixed % per step — last step caps at 99 (never 100 until API actually returns)
+  const STEP_PCT = [10, 20, 30, 40, 50, 60, 70, 80, 90, 99] as const;
 
   useEffect(() => {
     if (!loading) { setProgressIdx(0); return; }
@@ -392,9 +400,10 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
 
             {/* Checklist progress shown while generating */}
             {loading && (() => {
-              const total = progressSteps.length;
+              const total   = progressSteps.length;
               const current = Math.min(progressIdx, total - 1);
-              const pct = Math.round(((current + 1) / total) * 100);
+              const pct     = STEP_PCT[current] ?? 99;
+              const isLast  = current === total - 1;
               return (
                 <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
                   {/* Step checklist */}
@@ -408,7 +417,7 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
                           className={cn(
                             "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-xs transition-all duration-500",
                             done   ? "text-emerald-400 opacity-70" :
-                            active ? "bg-white/8 text-white font-semibold" :
+                            active ? "text-white font-semibold" :
                                      "text-slate-600"
                           )}
                         >
@@ -427,6 +436,15 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
                       );
                     })}
                   </ul>
+
+                  {/* 99% hint — shown only on the last step */}
+                  {isLast && (
+                    <p className="animate-pulse text-center font-mono text-[11px] text-slate-500">
+                      {lang === "ko"
+                        ? "✦ 마지막 처리 중 — 거의 다 됐어요, 조금만 기다려주세요 ✦"
+                        : "✦ Wrapping up the final pass — almost there ✦"}
+                    </p>
+                  )}
 
                   {/* Overall progress bar */}
                   <div className="space-y-1">
