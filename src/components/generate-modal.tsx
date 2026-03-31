@@ -61,10 +61,9 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
         "페인 포인트 분석 중...",
         "이해관계자 맵 구성 중...",
         "반론 및 대응 전략 작성 중...",
-        "미팅 어젠다 설계 중...",
         "파일럿 플랜 수립 중...",
         "ROI 모델 산출 중...",
-        "임원 요약 및 후속 이메일 작성 중...",
+        "임원 요약 작성 중...",
         "브리프 최종 검토 중...",
       ]
     : [
@@ -72,10 +71,9 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
         "Identifying pain points...",
         "Building stakeholder map...",
         "Drafting objection responses...",
-        "Designing meeting agenda...",
         "Structuring pilot plan...",
         "Calculating ROI model...",
-        "Writing executive summary & email...",
+        "Writing executive summary...",
         "Finalizing brief...",
       ];
 
@@ -433,8 +431,8 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
               </p>
               <p className="text-xl text-slate-400">
                 {lang === "ko"
-                  ? "AI가 즉시 분석합니다 · 하루 5회 무료"
-                  : "AI-generated in seconds · 5 free analyses per day"}
+                  ? "2분안에 무료 분석 · AI가 즉시 생성 · 하루 5회 무료"
+                  : "Free analysis in 2 min · AI-generated · 5 free per day"}
               </p>
             </div>
             <button

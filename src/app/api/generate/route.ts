@@ -44,27 +44,27 @@ interface AccountBrief {
   account: {
     company: string;
     industry: string;
-    situation: string; // 3–5 sentences, executive-level context
+    situation: string; // 2–3 sentences, executive-level context
     painPoints: Array<{
       title: string; // 8–12 words, customer-voice, specific
-      detail: string; // 60–100 words, first-person operational detail with numbers
+      detail: string; // 30–50 words, first-person operational detail with numbers
       severity: "High" | "Med" | "Low";
     }>; // exactly 3 pain points
     triggers: Array<{
       dateLabel: string; // "Jan 2026" format
-      title: string; // 6–10 words
-      detail: string; // 40–60 words
-      impact: string; // 20–35 words, commercial implication
+      title: string; // 5–8 words
+      detail: string; // 20–30 words
+      impact: string; // 10–15 words, commercial implication
     }>; // exactly 3 trigger events, dated within the last 6 months
     objectives: Array<{
-      title: string; // 8–14 words
+      title: string; // 8–12 words
       targetKpi: string; // current state → target state within timeframe
-      rationale: string; // 30–50 words, why this KPI matters commercially
+      rationale: string; // 15–25 words, why this KPI matters commercially
     }>; // exactly 2 objectives
   };
   opportunities: Array<{
     useCase: string; // 4–7 words
-    description: string; // 50–80 words
+    description: string; // 25–40 words
     impactScore: number; // 1–10
     difficulty: number; // 1–10
     timeToValue: string; // "X–Y weeks" format
@@ -76,26 +76,26 @@ interface AccountBrief {
     title: string; // realistic job title
     stance: "Supportive" | "Neutral" | "Resistant";
     influence: "High" | "Medium" | "Low";
-    keyConcern: string; // 30–50 words, specific to their role and the deal
-    recommendedApproach: string; // 30–50 words, actionable
+    keyConcern: string; // 15–25 words, specific to their role and the deal
+    recommendedApproach: string; // 15–25 words, actionable
   }>; // exactly 3 stakeholders: Economic Buyer, Champion, and one of Technical Evaluator or Blocker
   dealStrategy: {
     objections: Array<{
-      objection: string; // 10–20 words, realistic objection
-      response: string; // 50–80 words, Challenger Sale reframe — not a feature pitch
+      objection: string; // 8–15 words, realistic objection
+      response: string; // 25–40 words, Challenger Sale reframe — not a feature pitch
     }>; // exactly 3 objections
     positioning: string[]; // exactly 3 sentences: executive, technical, commercial
   };
   pilotPlan: {
     weeks: number; // 6 or 8
-    scope: string[]; // exactly 6 scope bullets: 5 in-scope, 1 "Out of scope: ..."
+    scope: string[]; // exactly 4 scope bullets: 3 in-scope, 1 "Out of scope: ..."
     phases: Array<{
       name: string;
       weeks: string; // "Weeks X–Y" format
       startWeek: number;
       endWeek: number;
-      objective: string; // 10–20 words
-      deliverables: string[]; // exactly 3 deliverables
+      objective: string; // 6–10 words
+      deliverables: string[]; // exactly 2 deliverables
     }>; // exactly 3 phases covering all weeks
     roi: {
       investment: string; // "$XK" or "$XM" format
@@ -103,9 +103,9 @@ interface AccountBrief {
       projectedValue: string; // "$XM first-year value" format
       paybackPeriod: string; // "X–Y months" format
       threeYearValue: string; // "$XM" format
-      valueDrivers: string[]; // exactly 3 value driver sentences with specific numbers
+      valueDrivers: string[]; // exactly 2 value driver sentences with specific numbers
     };
-    executiveSummary: string[]; // exactly 3 sentences for C-level consumption
+    executiveSummary: string[]; // exactly 2 sentences for C-level consumption
   };
 }`;
 }
