@@ -388,20 +388,40 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
               )}
             </Button>
 
-            {/* Real-time progress steps shown while generating */}
-            {loading && (
-              <div className="space-y-3">
-                <div className="h-0.5 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-emerald-400/60 transition-all duration-[3200ms] ease-linear"
-                    style={{ width: `${((progressIdx + 1) / progressSteps.length) * 100}%` }}
-                  />
+            {/* Circular progress shown while generating */}
+            {loading && (() => {
+              const pct = Math.round(((progressIdx + 1) / progressSteps.length) * 100);
+              const r = 44;
+              const circ = 2 * Math.PI * r;
+              const dash = (pct / 100) * circ;
+              return (
+                <div className="flex flex-col items-center gap-3 py-2">
+                  <div className="relative h-28 w-28">
+                    <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+                      {/* Track */}
+                      <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+                      {/* Fill */}
+                      <circle
+                        cx="50" cy="50" r={r}
+                        fill="none"
+                        stroke="#34d399"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={`${dash} ${circ}`}
+                        style={{ transition: "stroke-dasharray 3200ms linear" }}
+                      />
+                    </svg>
+                    {/* Percentage label */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-bold text-white">{pct}<span className="text-sm font-normal text-slate-400">%</span></span>
+                    </div>
+                  </div>
+                  <p className="text-center text-sm text-slate-400 transition-opacity duration-500">
+                    {progressSteps[progressIdx]}
+                  </p>
                 </div>
-                <p className="text-center text-xs text-slate-400 transition-opacity duration-500">
-                  {progressSteps[progressIdx]}
-                </p>
-              </div>
-            )}
+              );
+            })()}
 
             <p className="text-center text-xs text-slate-500">{t("gen.footer")}</p>
           </CardContent>

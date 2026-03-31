@@ -282,8 +282,8 @@ export const dict: Dict = {
   "gen.confirm.proceed": { en: "Yes, generate anyway", ko: "맞아요, 계속 진행" },
   "gen.confirm.edit": { en: "Edit name", ko: "이름 수정" },
   "gen.loading": {
-    en: "Generating brief — this takes 20–40 seconds…",
-    ko: "브리프 생성 중 — 20~40초 정도 소요됩니다…",
+    en: "Generating brief — within 2 minutes…",
+    ko: "브리프 생성 중 — 2분 이내에 소요됩니다…",
   },
   "gen.submit": { en: "Generate account brief", ko: "계정 브리프 생성" },
   "gen.save": { en: "Save to my accounts", ko: "내 계정에 저장" },
