@@ -323,7 +323,6 @@ export function AppShell({ accountId, children }: AppShellProps) {
 
           {/* Sidebar footer */}
           <div className="space-y-3 border-t border-slate-100 px-6 py-4">
-            <GenerateModal />
             <div className="flex items-center gap-2">
               <p className="flex-1 text-xs leading-5 text-slate-400">{t("shell.footer_note")}</p>
               <button
@@ -346,6 +345,7 @@ export function AppShell({ accountId, children }: AppShellProps) {
 
           {/* Top bar */}
           <Card className="border-white/70 bg-white/80 shadow-panel overflow-visible">
+            <GenerateModal variant="header" />
             <div className="flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div className="space-y-1">
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-slate-400">

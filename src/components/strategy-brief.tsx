@@ -112,7 +112,7 @@ export function StrategyBrief({ brief }: { brief: AccountBrief }) {
       </Card>
 
       {/* ── Objections + First meeting ──────────────────────────────── */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+      <div className={dealStrategy.agenda?.length ? "grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]" : ""}>
         <Card className="border-white/80 bg-white/92">
           <CardHeader className="space-y-3">
             <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">{t("strategy.objections.label")}</div>
@@ -137,28 +137,30 @@ export function StrategyBrief({ brief }: { brief: AccountBrief }) {
           </CardContent>
         </Card>
 
-        <Card className="border-white/80 bg-slate-950 text-white">
-          <CardHeader className="space-y-3">
-            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("strategy.agenda.label")}</div>
-            <CardTitle className="text-3xl text-white">{t("strategy.agenda.title")}</CardTitle>
-            <CardDescription className="text-base leading-7 text-slate-300">
-              {t("strategy.agenda.desc")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {dealStrategy.agenda.map((item) => (
-              <div key={`${item.time}-${item.topic}`} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="text-lg font-semibold text-white">{item.topic}</div>
-                  <span className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-slate-200">
-                    {item.time}
-                  </span>
+        {dealStrategy.agenda && dealStrategy.agenda.length > 0 && (
+          <Card className="border-white/80 bg-slate-950 text-white">
+            <CardHeader className="space-y-3">
+              <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-slate-400">{t("strategy.agenda.label")}</div>
+              <CardTitle className="text-3xl text-white">{t("strategy.agenda.title")}</CardTitle>
+              <CardDescription className="text-base leading-7 text-slate-300">
+                {t("strategy.agenda.desc")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {dealStrategy.agenda.map((item) => (
+                <div key={`${item.time}-${item.topic}`} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-lg font-semibold text-white">{item.topic}</div>
+                    <span className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-slate-200">
+                      {item.time}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-300">{item.outcome}</p>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-slate-300">{item.outcome}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* ── Message positioning ──────────────────────────────────────── */}

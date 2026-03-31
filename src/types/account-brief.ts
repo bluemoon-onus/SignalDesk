@@ -65,7 +65,7 @@ export interface AgendaItem {
 
 export interface DealStrategy {
   objections: ObjectionResponse[];
-  agenda: AgendaItem[];
+  agenda?: AgendaItem[];
   positioning: string[];
 }
 
@@ -99,7 +99,7 @@ export interface PilotPlan {
   phases: PilotPhase[];
   roi: RoiModel;
   executiveSummary: string[];
-  followUpEmail: FollowUpEmail;
+  followUpEmail?: FollowUpEmail;
 }
 
 // ─── Top-level brief ──────────────────────────────────────────────────────────

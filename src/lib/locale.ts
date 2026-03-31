@@ -80,7 +80,7 @@ function applyKoTranslation(brief: AccountBrief, t: AccountI18n): AccountBrief {
                 response:  t.dealStrategy!.objections![i]?.response  ?? o.response,
               }))
             : brief.dealStrategy.objections,
-          agenda: t.dealStrategy.agenda
+          agenda: t.dealStrategy.agenda && brief.dealStrategy.agenda
             ? brief.dealStrategy.agenda.map((a, i) => ({
                 ...a,
                 topic:   t.dealStrategy!.agenda![i]?.topic   ?? a.topic,
@@ -105,9 +105,12 @@ function applyKoTranslation(brief: AccountBrief, t: AccountI18n): AccountBrief {
             ? { ...brief.pilotPlan.roi, ...t.pilotPlan.roi }
             : brief.pilotPlan.roi,
           executiveSummary: t.pilotPlan.executiveSummary ?? brief.pilotPlan.executiveSummary,
-          followUpEmail: t.pilotPlan.followUpEmail
-            ? { ...brief.pilotPlan.followUpEmail, ...t.pilotPlan.followUpEmail }
-            : brief.pilotPlan.followUpEmail,
+          followUpEmail: brief.pilotPlan.followUpEmail
+            ? {
+                subject: t.pilotPlan.followUpEmail?.subject ?? brief.pilotPlan.followUpEmail.subject,
+                body:    t.pilotPlan.followUpEmail?.body    ?? brief.pilotPlan.followUpEmail.body,
+              }
+            : undefined,
         }
       : brief.pilotPlan,
   };

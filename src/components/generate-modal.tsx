@@ -35,7 +35,7 @@ const PROVIDERS = [
 type Provider = (typeof PROVIDERS)[number]["key"];
 
 // ─── Main modal component ─────────────────────────────────────────────────────
-export function GenerateModal() {
+export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "header" }) {
   const { t, lang } = useLanguage();
   const router      = useRouter();
   const [open, setOpen]           = useState(false);
@@ -414,15 +414,41 @@ export function GenerateModal() {
 
   return (
     <>
-      {/* Trigger button */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-2.5 rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 px-4 py-3 text-left text-sm font-semibold text-white transition-all hover:from-slate-800 hover:to-slate-700"
-      >
-        <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-        {t("gen.title")}
-      </button>
+      {variant === "header" ? (
+        /* ── Header CTA banner ── */
+        <div className="flex items-center justify-between gap-4 border-t border-slate-100 px-5 py-3">
+          <div className="min-w-0 space-y-0.5">
+            <p className="text-xs font-semibold text-slate-800">
+              {lang === "ko"
+                ? "영업이 필요한 회사를 입력하고 무료로 전략분석을 받아보세요"
+                : "Get a free AI strategy brief for any target account"}
+            </p>
+            <p className="text-[11px] text-slate-400">
+              {lang === "ko"
+                ? "AI가 즉시 분석합니다 · 하루 5회 무료"
+                : "AI-generated in seconds · 5 free analyses per day"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="shrink-0 flex items-center gap-1.5 rounded-xl bg-slate-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-800"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+            {lang === "ko" ? "지금 생성" : "Generate"}
+          </button>
+        </div>
+      ) : (
+        /* ── Sidebar trigger button ── */
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex w-full items-center gap-2.5 rounded-xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 px-4 py-3 text-left text-sm font-semibold text-white transition-all hover:from-slate-800 hover:to-slate-700"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+          {t("gen.title")}
+        </button>
+      )}
 
       {mounted && createPortal(modalContent, document.body)}
     </>

@@ -84,11 +84,6 @@ interface AccountBrief {
       objection: string; // 10–20 words, realistic objection
       response: string; // 50–80 words, Challenger Sale reframe — not a feature pitch
     }>; // exactly 3 objections
-    agenda: Array<{
-      time: string; // "0–10 min" format
-      topic: string; // 4–8 words
-      outcome: string; // 25–45 words, specific outcome not a general goal
-    }>; // exactly 4 agenda items totaling 45 minutes
     positioning: string[]; // exactly 3 sentences: executive, technical, commercial
   };
   pilotPlan: {
@@ -111,10 +106,6 @@ interface AccountBrief {
       valueDrivers: string[]; // exactly 3 value driver sentences with specific numbers
     };
     executiveSummary: string[]; // exactly 3 sentences for C-level consumption
-    followUpEmail: {
-      subject: string; // professional email subject line
-      body: string; // 150–250 words, ready to send, ends with a specific ask
-    };
   };
 }`;
 }

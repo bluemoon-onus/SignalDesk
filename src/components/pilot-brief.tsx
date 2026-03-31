@@ -187,26 +187,28 @@ export function PilotBrief({ brief }: { brief: AccountBrief }) {
       </Card>
 
       {/* ── Follow-up email ──────────────────────────────────────────── */}
-      <Card className="border-white/80 bg-white/92">
-        <CardHeader className="space-y-3">
-          <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
-            <Mail className="h-4 w-4 text-slate-700" />
-            {t("pilot.email.label")}
-          </div>
-          <CardTitle className="text-3xl text-slate-950">{t("pilot.email.title")}</CardTitle>
-          <CardDescription className="text-base leading-7 text-slate-600">{t("pilot.email.desc")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("pilot.email.subject")}</div>
-            <div className="mt-2 text-sm font-semibold text-slate-950">{pilotPlan.followUpEmail.subject}</div>
-          </div>
-          <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("pilot.email.body")}</div>
-            <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{pilotPlan.followUpEmail.body}</div>
-          </div>
-        </CardContent>
-      </Card>
+      {pilotPlan.followUpEmail && (
+        <Card className="border-white/80 bg-white/92">
+          <CardHeader className="space-y-3">
+            <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.24em] text-slate-500">
+              <Mail className="h-4 w-4 text-slate-700" />
+              {t("pilot.email.label")}
+            </div>
+            <CardTitle className="text-3xl text-slate-950">{t("pilot.email.title")}</CardTitle>
+            <CardDescription className="text-base leading-7 text-slate-600">{t("pilot.email.desc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-5">
+              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("pilot.email.subject")}</div>
+              <div className="mt-2 text-sm font-semibold text-slate-950">{pilotPlan.followUpEmail.subject}</div>
+            </div>
+            <div className="rounded-[24px] border border-slate-200 bg-white p-5">
+              <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-slate-500">{t("pilot.email.body")}</div>
+              <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{pilotPlan.followUpEmail.body}</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
