@@ -416,28 +416,37 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
     <>
       {variant === "header" ? (
         /* ── Header CTA banner ── */
-        <div className="flex items-center justify-between gap-4 border-t border-slate-100 px-5 py-3">
-          <div className="min-w-0 space-y-0.5">
-            <p className="text-xs font-semibold text-slate-800">
-              {lang === "ko"
-                ? "영업이 필요한 회사를 입력하고 무료로 전략분석을 받아보세요"
-                : "Get a free AI strategy brief for any target account"}
-            </p>
-            <p className="text-[11px] text-slate-400">
-              {lang === "ko"
-                ? "AI가 즉시 분석합니다 · 하루 5회 무료"
-                : "AI-generated in seconds · 5 free analyses per day"}
-            </p>
+        <>
+          <style>{`
+            @keyframes ctaBreathe {
+              0%, 100% { background-color: #0f172a; box-shadow: 0 0 0 0 rgba(15,23,42,0); }
+              50% { background-color: #475569; box-shadow: 0 0 0 6px rgba(15,23,42,0.08); }
+            }
+            .cta-breathe { animation: ctaBreathe 2.2s ease-in-out infinite; }
+          `}</style>
+          <div className="flex flex-col items-center gap-2.5 border-b border-slate-100 px-5 py-4 text-center">
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-slate-900">
+                {lang === "ko"
+                  ? "영업이 필요한 회사를 입력하고 무료로 전략분석을 받아보세요"
+                  : "Get a free AI strategy brief for any target account"}
+              </p>
+              <p className="text-xl text-slate-400">
+                {lang === "ko"
+                  ? "AI가 즉시 분석합니다 · 하루 5회 무료"
+                  : "AI-generated in seconds · 5 free analyses per day"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="cta-breathe mt-1 flex items-center gap-2 rounded-2xl px-8 py-3 text-base font-bold text-white"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              {lang === "ko" ? "지금 생성하기" : "Generate Now"}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="shrink-0 flex items-center gap-1.5 rounded-xl bg-slate-950 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-800"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-            {lang === "ko" ? "지금 생성" : "Generate"}
-          </button>
-        </div>
+        </>
       ) : (
         /* ── Sidebar trigger button ── */
         <button
