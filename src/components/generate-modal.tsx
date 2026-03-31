@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
+  CheckCircle2,
+  Circle,
   Loader2,
   Sparkles,
   X,
@@ -80,7 +82,7 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
   useEffect(() => {
     if (!loading) { setProgressIdx(0); return; }
     const interval = setInterval(() => {
-      setProgressIdx((prev) => (prev + 1) % progressSteps.length);
+      setProgressIdx((prev) => Math.min(prev + 1, progressSteps.length - 1));
     }, 3200);
     return () => clearInterval(interval);
   }, [loading, progressSteps.length]);
@@ -388,37 +390,59 @@ export function GenerateModal({ variant = "sidebar" }: { variant?: "sidebar" | "
               )}
             </Button>
 
-            {/* Circular progress shown while generating */}
+            {/* Checklist progress shown while generating */}
             {loading && (() => {
-              const pct = Math.round(((progressIdx + 1) / progressSteps.length) * 100);
-              const r = 44;
-              const circ = 2 * Math.PI * r;
-              const dash = (pct / 100) * circ;
+              const total = progressSteps.length;
+              const current = Math.min(progressIdx, total - 1);
+              const pct = Math.round(((current + 1) / total) * 100);
               return (
-                <div className="flex flex-col items-center gap-3 py-2">
-                  <div className="relative h-28 w-28">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
-                      {/* Track */}
-                      <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-                      {/* Fill */}
-                      <circle
-                        cx="50" cy="50" r={r}
-                        fill="none"
-                        stroke="#34d399"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        strokeDasharray={`${dash} ${circ}`}
-                        style={{ transition: "stroke-dasharray 3200ms linear" }}
+                <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                  {/* Step checklist */}
+                  <ul className="space-y-1.5">
+                    {progressSteps.map((step, i) => {
+                      const done   = i < current;
+                      const active = i === current;
+                      return (
+                        <li
+                          key={step}
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-xs transition-all duration-500",
+                            done   ? "text-emerald-400 opacity-70" :
+                            active ? "bg-white/8 text-white font-semibold" :
+                                     "text-slate-600"
+                          )}
+                        >
+                          {done ? (
+                            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                          ) : active ? (
+                            <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-emerald-400" />
+                          ) : (
+                            <Circle className="h-3.5 w-3.5 shrink-0 text-slate-700" />
+                          )}
+                          <span className={done ? "line-through" : ""}>{step}</span>
+                          {active && (
+                            <span className="ml-auto shrink-0 font-mono text-[10px] text-emerald-400">{pct}%</span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {/* Overall progress bar */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                        {lang === "ko" ? "전체 진행률" : "Overall progress"}
+                      </span>
+                      <span className="font-mono text-xs font-bold text-white">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-emerald-400 transition-all duration-[3200ms] ease-linear"
+                        style={{ width: `${pct}%` }}
                       />
-                    </svg>
-                    {/* Percentage label */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold text-white">{pct}<span className="text-sm font-normal text-slate-400">%</span></span>
                     </div>
                   </div>
-                  <p className="text-center text-sm text-slate-400 transition-opacity duration-500">
-                    {progressSteps[progressIdx]}
-                  </p>
                 </div>
               );
             })()}
