@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-real-ip") ??
     "127.0.0.1";
 
-  const quota = getQuota(ip);
+  const quota = await getQuota(ip);
   if (!quota.allowed) {
     return NextResponse.json(
       { error: "Daily generation limit reached. Try again tomorrow.", remaining: 0 },
@@ -194,8 +194,8 @@ Return ONLY the raw JSON object. No markdown formatting, no code blocks, no expl
     }
 
     // Consume quota only on success
-    consumeQuota(ip);
-    const updatedQuota = getQuota(ip);
+    await consumeQuota(ip);
+    const updatedQuota = await getQuota(ip);
 
     return NextResponse.json({ brief, remaining: updatedQuota.remaining });
   } catch (err) {

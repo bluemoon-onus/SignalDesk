@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     request.headers.get("x-real-ip") ??
     "127.0.0.1";
 
-  const quota = getQuota(ip);
+  const quota = await getQuota(ip);
   return NextResponse.json({
     remaining: quota.remaining,
     limit: quota.limit,
